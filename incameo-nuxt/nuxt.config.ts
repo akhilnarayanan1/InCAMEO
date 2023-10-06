@@ -5,6 +5,13 @@ export default defineNuxtConfig({
     '@nuxt/devtools',
     'nuxt-vuefire',
   ],  
+  postcss: {
+    plugins: {
+      tailwindcss: {},
+      autoprefixer: {},
+    },
+  },
+  css: ['~/assets/css/main.css'],
   vuefire: {
     // ensures the auth module is enabled
     auth: {
