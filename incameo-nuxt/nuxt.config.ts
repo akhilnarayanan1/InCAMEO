@@ -17,6 +17,7 @@ export default defineNuxtConfig({
     auth: {
       enabled: true
     },
+    emulators: false,
     config: {
       apiKey: "",
       authDomain: "",
