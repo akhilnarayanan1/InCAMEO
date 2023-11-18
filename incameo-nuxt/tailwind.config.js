@@ -1,15 +1,23 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+
+import konstaConfig from "konsta/config";
+
+module.exports = konstaConfig({
   content: [
     "./components/**/*.{js,vue,ts}",
     "./layouts/**/*.vue",
     "./pages/**/*.vue",
     "./plugins/**/*.{js,ts}",
+    "./nuxt.config.{js,ts}",
     "./app.vue",
   ],
+  darkMode: 'class',
   theme: {
     extend: {},
   },
-  plugins: [require("daisyui")],
-}
+  variants: {
+    extend: {},
+  },
+  plugins: [],
+});
 

@@ -1,20 +1,42 @@
 <template>
-    <button @click="connectFacebook" class="btn btn-primary w-64 rounded-full">CONNECT FACEBOOK</button>
-    {{ user }}
+  <k-page>
+    <Navbar />
+      <k-block strong>
+        <p>Here is your Nuxt & Konsta UI app. Let's see what we have here.</p>
+      </k-block>
+      <k-button @click="connectFacebook" rounded>CONNECT FACEBOOK</k-button>
+  </k-page>
 </template>
 
 <script setup lang="ts">
-
-import { signInWithPopup, FacebookAuthProvider, signOut } from "firebase/auth";
+import { kPage, kBlock, kButton } from 'konsta/vue';
+import { signInWithPopup, FacebookAuthProvider } from "firebase/auth";
+import { setDoc, doc } from "firebase/firestore";
 
 const auth = useFirebaseAuth()!;
+const db =  useFirestore();
 const user = useCurrentUser();
 const provider = new FacebookAuthProvider();
 
 const connectFacebook = () => {
+  provider.addScope('instagram_basic');
+  provider.addScope('pages_show_list');
+  provider.setCustomParameters({
+    'display': 'popup'
+  });
   signInWithPopup(auth, provider)
-    .then((result) => {
-      const user = result.user;
+    .then(async (result) => {
+      const userId = result.user.uid;
+      const credential = FacebookAuthProvider.credentialFromResult(result);
+      const accessToken = credential?.accessToken;
+
+      await setDoc(doc(db, "users", userId), {
+        accessToken,
+      }, { merge: true })
+      .catch(error => {
+        console.log(error)
+      });
+
       navigateTo({path: '/dashboard',})
     })
     .catch((error) => {

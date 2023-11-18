@@ -3,15 +3,16 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: [
     '@nuxt/devtools',
+    '@nuxtjs/tailwindcss',
     'nuxt-vuefire',
-  ],  
+  ],
   postcss: {
     plugins: {
       tailwindcss: {},
       autoprefixer: {},
     },
   },
-  css: ['~/assets/css/main.css'],
+  css: ['~/assets/css/globals.css'],
   vuefire: {
     // ensures the auth module is enabled
     auth: {
@@ -28,4 +29,7 @@ export default defineNuxtConfig({
       measurementId: ""
     }
   },
+  build: {
+    transpile: ['konsta'],
+  }
 })

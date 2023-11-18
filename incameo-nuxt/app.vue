@@ -1,11 +1,17 @@
 <template>
   <div>
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
+    <k-app :theme="appTheme">
+      <NuxtPage/>
+    </k-app>
+    
   </div>
 </template>
 
 <script setup lang="ts">
+import { kApp } from 'konsta/vue';
+
+const appTheme = getAppTheme();
+
+const user = useCurrentUser();
 
 </script>
