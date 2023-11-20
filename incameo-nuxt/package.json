@@ -24,8 +24,8 @@
     "firebase-functions": "^4.5.0",
     "konsta": "^3.1.2",
     "lodash": "^4.17.21",
-    "nuxt-vuefire": "^0.4.1",
+    "nuxt-vuefire": "^0.4.0",
     "tailwind-merge": "^2.0.0",
-    "vuefire": "^3.1.18"
+    "vuefire": "^3.1.17"
   }
 }
