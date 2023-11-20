@@ -12,6 +12,4 @@ import { kApp } from 'konsta/vue';
 
 const appTheme = getAppTheme();
 
-const user = useCurrentUser();
-
 </script>

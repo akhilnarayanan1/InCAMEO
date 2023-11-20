@@ -14,8 +14,8 @@
 
 <script setup lang="ts">
 
-import { kPage, kButton, kToast } from "konsta/vue";
-import { signOut, type User } from "firebase/auth";
+import { kPage, kButton } from "konsta/vue";
+import { signOut } from "firebase/auth";
 
 const listAccountsComponent = ref();
 
@@ -31,7 +31,7 @@ const loadAccounts = async () => {
 
 // Change loading status after fetching user
 getCurrentUser()
-  .then((user: User) => {
+  .then(() => {
     loading.page = false;
   })
   .catch((error) => {

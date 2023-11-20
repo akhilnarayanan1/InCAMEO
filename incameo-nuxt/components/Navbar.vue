@@ -33,18 +33,8 @@
 
 
 <script setup lang="ts">
-import {
-    kNavbar,
-    kList,
-    kListItem,
-    kLink,
-    kPopover,
-    kToggle,
-    kBlockTitle,
-    kRadio,
-    useTheme,
-  } from 'konsta/vue';
-  
+import { kNavbar, kList, kListItem, kLink, kPopover, kToggle, kBlockTitle, kRadio, useTheme } from 'konsta/vue';
+
 const theme = useTheme()
 
 const darkMode = ref(false);

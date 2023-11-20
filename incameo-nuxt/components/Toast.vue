@@ -17,38 +17,38 @@
       <div class="shrink text-white">{{ toast.message }}</div>
     </k-toast>
   </div>
-  </template>
+</template>
   
-  <script setup lang="ts">
-    import _ from "lodash";
-    import { getToasts } from "@/composables/toast";
-    import { type ToastData } from "@/assets/ts/types";
-    import { kToast, kButton } from "konsta/vue";
+<script setup lang="ts">
+import _ from "lodash";
+import { getToasts } from "@/composables/toast";
+import { type ToastData } from "@/assets/ts/types";
+import { kToast, kButton } from "konsta/vue";
 
-    const opened = reactive({right: true})
-    let toasts = getToasts();
-    const removeToast = (id: number | undefined) => {
-        if (id) {
-            const isOnIndex = (_.findIndex(toasts.value, {id: id}));
-            toasts.value.splice(isOnIndex, 1);
-        };
+const opened = reactive({right: true})
+let toasts = getToasts();
+const removeToast = (id: number | undefined) => {
+    if (id) {
+        const isOnIndex = (_.findIndex(toasts.value, {id: id}));
+        toasts.value.splice(isOnIndex, 1);
     };
+};
+
+const reverseToast = (toasts: ToastData[]) => {
+  return [...toasts].reverse()
+}
+
+</script>
   
-    const reverseToast = (toasts: ToastData[]) => {
-      return [...toasts].reverse()
-    }
   
-  </script>
-  
-  
-  <style scoped>
-  .list-enter-active,
-  .list-leave-active {
-    transition: all 1s ease;
-  }
-  .list-enter-from,
-  .list-leave-to {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  </style>
+<style scoped>
+.list-enter-active,
+.list-leave-active {
+  transition: all 1s ease;
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+</style>

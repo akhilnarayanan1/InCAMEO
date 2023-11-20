@@ -24,7 +24,7 @@
 <script setup lang="ts">
 
 import { kPage, kPopup, kBlock, kLink, kNavbar, kList, kListItem } from "konsta/vue";
-import {type InstagramData} from "@/assets/ts/types";
+import { type InstagramData } from "@/assets/ts/types";
 import { doc, getDoc } from "firebase/firestore";
 import { useIsCurrentUserLoaded } from "vuefire";
 
