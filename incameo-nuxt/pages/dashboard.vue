@@ -4,10 +4,10 @@
     <Toast />
     <div class="grid grid-cols-2 gap-x-4">
       <k-button @click="signOutFacebook" rounded>SIGNOUT</k-button> 
-      <k-button @click="loadAccounts" rounded>LOAD ACCOUNT</k-button>
+      <k-button class="popover-button" @click="() => openPopover('.popover-button')" rounded>LOAD ACCOUNT</k-button>
     </div>
 
-    <ListAccounts ref="listAccountsComponent" />
+    <ListAccounts ref="listAccountsComponent" :popoverTargetRef="popoverTargetRef" />
     
   </k-page>
 </template>
@@ -18,25 +18,18 @@ import { kPage, kButton } from "konsta/vue";
 import { signOut } from "firebase/auth";
 
 const listAccountsComponent = ref();
+const popoverTargetRef = ref();
 
 const loading = reactive({page: true});
-const opened = reactive({left:true})
 
 const auth = useFirebaseAuth()!;
 const user = useCurrentUser();
+watchEffect(() => loading.page = user.value == undefined);
 
-const loadAccounts = async () => {
+const openPopover = (targetRef: string) => {
   listAccountsComponent.value.loadAccounts();
+  popoverTargetRef.value = targetRef;
 };
-
-// Change loading status after fetching user
-getCurrentUser()
-  .then(() => {
-    loading.page = false;
-  })
-  .catch((error) => {
-    loading.page = false;
-  });
 
 const signOutFacebook = async () => {
   await signOut(auth)

@@ -10,6 +10,6 @@
 <script setup lang="ts">
 import { kApp } from 'konsta/vue';
 
-const appTheme = getAppTheme();
+const appTheme = computed(() => getAppTheme());
 
 </script>

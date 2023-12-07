@@ -12,12 +12,12 @@
         <k-list strong inset>
           <k-list-item label title="Material Theme">
             <template #media>
-              <k-radio component="div" class="-my-1" :checked="theme === 'material'" @click="appThemeChangeMaterial"/>
+              <k-radio component="div" class="-my-1" :checked="theme === 'material'" @change="() => setAppTheme('material')"/>
             </template>
           </k-list-item>
           <k-list-item label title="iOS Theme">
             <template #media>
-              <k-radio component="div" class="-my-1" :checked="theme === 'ios'" @click="appThemeChangeIos"/>
+              <k-radio component="div" class="-my-1" :checked="theme === 'ios'" @change="() => setAppTheme('ios')"/>
             </template>
           </k-list-item>
         </k-list>
@@ -35,21 +35,11 @@
 <script setup lang="ts">
 import { kNavbar, kList, kListItem, kLink, kPopover, kToggle, kBlockTitle, kRadio, useTheme } from 'konsta/vue';
 
-const theme = useTheme()
+const theme = useTheme();
 
 const darkMode = ref(false);
 const popoverOpened = ref(false);
-const popoverTargetRef = ref('');
-
-
-const appThemeChangeMaterial = () => {
-    getAppTheme().value == "material" ? null : setAppTheme("material");
-}
-
-const appThemeChangeIos = () => {
-    getAppTheme().value == "ios" ? null : setAppTheme("ios");
-}
-
+const popoverTargetRef = ref();
 
 const toggleDarkMode = () => {
   darkMode.value = !darkMode.value;

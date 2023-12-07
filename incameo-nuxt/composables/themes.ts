@@ -1,5 +1,7 @@
-type AppTheme = 'material' | 'ios' | 'parent' | undefined;
+type AppTheme = 'material' | 'ios';
 
-export const getAppTheme = () => useState<AppTheme>('appTheme', () => "material")
+export const appTheme = () => useState<AppTheme>('appTheme', () => "material");
 
-export const setAppTheme = (theme: AppTheme) => getAppTheme().value = theme;
+export const setAppTheme = (theme: AppTheme) => appTheme().value = theme;
+
+export const getAppTheme = () => appTheme().value;
