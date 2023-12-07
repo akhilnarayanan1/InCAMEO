@@ -4,17 +4,17 @@
         <k-preloader />
       </k-block>
       <k-list v-else>
-        <k-block-title>Instagram Business Accounts</k-block-title>
+        <k-block-title class="mb-0">Instagram Business Accounts</k-block-title>
         <div v-for="{picture, username, instagram_business_account} in response.connectedAccount.data">
-          <k-list-item  v-if="instagram_business_account" :title="username" @click="()=>{}" :link="instagram_business_account ? true : false">
+          <k-list-item  v-if="instagram_business_account" :title="username" @click="() => saveInstgramBusinessAccount(instagram_business_account.id)" :link="instagram_business_account ? true : false">
             <template #media>
               <img :src="picture.data.url" class="rounded-full" width="32" height="32">
             </template>
           </k-list-item>
         </div>
-        <k-block-title>Non-Instagram Business Accounts</k-block-title>
+        <k-block-title class="mb-0">Non-Instagram Business Accounts</k-block-title>
         <div v-for="{picture, username, instagram_business_account} in response.connectedAccount.data">
-          <k-list-item v-if="!instagram_business_account" :title="username" @click="()=>{}" :link="instagram_business_account ? true : false">
+          <k-list-item v-if="!instagram_business_account" :title="username" :link="instagram_business_account ? true : false">
             <template #media>
               <img :src="picture.data.url" class="rounded-full" width="32" height="32">
             </template>
@@ -27,46 +27,46 @@
 
 <script setup lang="ts">
 
-import { kPage, kPreloader, kPopover, kBlock, kBlockTitle, kLink, kNavbar, kList, kListItem } from "konsta/vue";
+import { kPreloader, kPopover, kBlock, kBlockTitle, kList, kListItem } from "konsta/vue";
 import { type InstagramData } from "@/assets/ts/types";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useIsCurrentUserLoaded } from "vuefire";
+import type { User } from "firebase/auth";
 
 
 const popoverOpened = ref(false);
 const db =  useFirestore();
 const loading = ref(true);
 
+const currentUser = useCurrentUser();
 const props = defineProps<{ popoverTargetRef: string}>();
 
-const getAccessToken = async () => {
-    let accessToken = "";
-    
-    const user = useCurrentUser();
+const saveInstgramBusinessAccount = async (instagram_business_account_id: string) => {
+    await setDoc(doc(db, "instagram_business", instagram_business_account_id), {
+      "userid": currentUser.value?.uid,
+      "lastUpdatedOn": serverTimestamp(),
+    }, { merge: true })
+    .then(()=>{
+      popoverOpened.value = false;
+      addToast({message: "Account added succesfully!", type:"success", duration: 3000});
+    })
+    .catch(error => {
+      popoverOpened.value = false;
+      addToast({message: error, type:"error", duration: 3000});
+    });
+};
 
-    if (useIsCurrentUserLoaded().value) {
-        const userId = user.value?.uid || "";
-        const docRef = doc(db, "users", userId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-            return docSnap.data().accessToken;
-        } 
-    }
-    
-    return accessToken;
-
-}
-
-const response: { connectedAccount: InstagramData } = reactive({ connectedAccount: {data: [], paging: {cursors: {after: "", before: ""}}, loading: true} });
+const response: { connectedAccount: InstagramData } = reactive({ connectedAccount: {} as InstagramData });
 
 const loadAccounts = async () => {
 
-    // if (!userId) {
-    //     addToast({message: "UserID not set",  type: "error", duration: 5000})
-    // }
+    //Stop processing if user is blank
+    if (!currentUser) {
+      addToast({ message: "Unknown error, Please try again (101)", type: "error", duration: 3000 });
+      return;
+    };
     popoverOpened.value = true;
-    const accessToken = await getAccessToken().catch(error=>addToast({message: error, type: "error", duration: 3000}));
-    const {pending, data: resp} = await listAccounts({accessToken: accessToken});
+    const {pending, data: resp} = await listAccounts(currentUser.value as User, db);
     loading.value = pending.value
     response.connectedAccount = resp.value as InstagramData;
 }    

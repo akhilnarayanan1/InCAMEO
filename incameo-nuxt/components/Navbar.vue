@@ -39,7 +39,7 @@ const theme = useTheme();
 
 const darkMode = ref(false);
 const popoverOpened = ref(false);
-const popoverTargetRef = ref();
+const popoverTargetRef = ref("");
 
 const toggleDarkMode = () => {
   darkMode.value = !darkMode.value;
