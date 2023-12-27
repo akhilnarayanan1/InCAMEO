@@ -27,6 +27,7 @@
           </template>
         </k-list-item>
         <k-list-item title="Accent Color" link @click="() => (popoverOpened = false)" />
+        <k-list-item title="Signout" link @click="signOutFacebook" />
       </k-list>
     </k-popover>
 </template>
@@ -34,8 +35,10 @@
 
 <script setup lang="ts">
 import { kNavbar, kList, kListItem, kLink, kPopover, kToggle, kBlockTitle, kRadio, useTheme } from 'konsta/vue';
+import { signOut } from "firebase/auth";
 
 const theme = useTheme();
+const auth = useFirebaseAuth()!;
 
 const darkMode = ref(false);
 const popoverOpened = ref(false);
@@ -49,5 +52,10 @@ const toggleDarkMode = () => {
 const openPopover = (targetRef: string) => {
     popoverTargetRef.value = targetRef;
     popoverOpened.value = true;
+};
+
+const signOutFacebook = async () => {
+  await signOut(auth)
+    .catch(error=>addToast({message:error, type: "error"}));
 };
 </script>

@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import { kPage, kBlock, kButton } from 'konsta/vue';
 import { signInWithPopup, FacebookAuthProvider } from "firebase/auth";
-import { setDoc, doc } from "firebase/firestore";
+import { setDoc, doc, serverTimestamp } from "firebase/firestore";
 
 const auth = useFirebaseAuth()!;
 const db =  useFirestore();
@@ -21,6 +21,8 @@ const provider = new FacebookAuthProvider();
 const connectFacebook = () => {
   provider.addScope('instagram_basic');
   provider.addScope('pages_show_list');
+  provider.addScope('instagram_manage_insights');
+  provider.addScope('pages_read_engagement');
   provider.setCustomParameters({
     'display': 'popup'
   });
@@ -31,18 +33,15 @@ const connectFacebook = () => {
       const accessToken = credential?.accessToken;
 
       await setDoc(doc(db, "users", userId), {
-        accessToken,
+        "accessToken": accessToken,
+        "updatedAt": serverTimestamp(),
       }, { merge: true })
       .catch(error => {
-        console.log(error)
+        console.log(error);
       });
-
       navigateTo({path: '/dashboard',})
     })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-    })
+    .catch(error=>addToast({message: error, type: "error"}));
 };
 
 </script>
