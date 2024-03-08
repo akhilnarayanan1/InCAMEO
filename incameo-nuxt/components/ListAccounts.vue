@@ -1,5 +1,6 @@
 <template>
-    <k-popover :opened="popoverOpened" :target="props.popoverTargetRef" @backdropclick="() => (popoverOpened = false)">
+    <k-button class="popover-button" @click="() => openPopover('.popover-button')" rounded>LOAD ACCOUNT</k-button>
+    <k-popover :opened="popoverOpened" :target="popoverTargetRef" @backdropclick="() => (popoverOpened = false)">
       <k-block v-if="loading" class="text-center">
         <k-preloader />
       </k-block>
@@ -27,19 +28,28 @@
 
 <script setup lang="ts">
 
-import { kPreloader, kPopover, kBlock, kBlockTitle, kList, kListItem } from "konsta/vue";
+import { kButton, kPreloader, kPopover, kBlock, kBlockTitle, kList, kListItem } from "konsta/vue";
 import { type InstagramData } from "@/assets/ts/types";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useIsCurrentUserLoaded } from "vuefire";
-import type { User } from "firebase/auth";
-
 
 const popoverOpened = ref(false);
-const db =  useFirestore();
+const popoverTargetRef = ref("");
 const loading = ref(true);
 
+const db =  useFirestore();
 const currentUser = useCurrentUser();
-const props = defineProps<{ popoverTargetRef: string}>();
+const props = defineProps<{accessToken: string}>();
+
+const openPopover = (targetRef: string) => {
+  popoverTargetRef.value = targetRef;
+  popoverOpened.value = true;
+  if (!useIsCurrentUserLoaded().value) {
+      watch(currentUser, (newCurrentUser) => loadAccounts());
+  } else {
+    loadAccounts();
+  }
+};
 
 const saveInstgramBusinessAccount = async (instagram_business_account_id: string) => {
     await setDoc(doc(db, "instagram_business", instagram_business_account_id), {
@@ -59,18 +69,23 @@ const saveInstgramBusinessAccount = async (instagram_business_account_id: string
 const response: { connectedAccount: InstagramData } = reactive({ connectedAccount: {} as InstagramData });
 
 const loadAccounts = async () => {
-
     //Stop processing if user is blank
-    if (!currentUser) {
-      addToast({ message: "Unknown error, Please try again (101)", type: "error", duration: 3000 });
+    if (!currentUser.value) {
+      addToast({ message: "Unknown error, Please try again (401)", type: "error", duration: 3000 });
       return;
     };
     popoverOpened.value = true;
-    const {pending, data: resp} = await listAccounts(currentUser.value as User, db);
-    loading.value = pending.value
-    response.connectedAccount = resp.value as InstagramData;
-}    
+    const url = await listAccounts({accessToken: props.accessToken});
+    const {pending, data: resp, error} = useLazyFetch(url as string)
 
-defineExpose({loadAccounts});
+    watch(() => pending.value, (newpending) => {
+      loading.value = newpending;
+      if(error.value) {
+        addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
+      } else {
+        response.connectedAccount = resp.value as InstagramData;
+      }
+    });
+}    
 
 </script>

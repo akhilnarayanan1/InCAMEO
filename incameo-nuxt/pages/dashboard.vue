@@ -2,67 +2,87 @@
   <k-page>
     <Navbar />
     <Toast />
-    <div class="grid grid-cols-2 gap-x-4">
-      <k-button @click="signOutFacebook" rounded>SIGNOUT</k-button> 
-      <k-button class="popover-button" @click="() => openPopover('.popover-button')" rounded>LOAD ACCOUNT</k-button>
+    <ListAccounts :accessToken="userDetails.accessToken" />
+
+    <UserInsights 
+      :accountId="userDetails.accountId" 
+      :accessToken="userDetails.accessToken"
+    />
+
+    <div v-for="{connectedAccount} in response">
+      {{ connectedAccount.username }}
     </div>
-    {{ response }}
-    <ListAccounts ref="listAccountsComponent" :popoverTargetRef="popoverTargetRef" />
     
   </k-page>
 </template>
 
 <script setup lang="ts">
 
-import { kPage, kButton } from "konsta/vue";
+import { kPage, kCard, kButton } from "konsta/vue";
 import { signOut, type User } from "firebase/auth";
-import { type InstagramData } from "@/assets/ts/types";
-import { getDocs, doc, query, collection, where, } from "firebase/firestore";
-
-const listAccountsComponent = ref();
-const popoverTargetRef = ref("");
-const db = useFirestore();
-const response: {connectedAccount: InstagramData}[]= reactive([]);
+import type { InstagramProfile, UserInsightsTotalValue } from "@/assets/ts/types";
+import { getDocs, doc, query, collection, where, getDoc} from "firebase/firestore";
+import { useFirestore, useIsCurrentUserLoaded } from "vuefire";
+import _ from "lodash";
 
 const loading = reactive({page: true});
+const response: {connectedAccount: InstagramProfile}[]= reactive([]);
+const userDetails = reactive({accountId: "",  accessToken: ""});
 
-const auth = useFirebaseAuth()!;
-const currentUser = await getCurrentUser() as User | null | undefined;
+const router = useRouter();
+const db = useFirestore();
+const currentUser = useCurrentUser();
+
 watchEffect(() => loading.page = currentUser == undefined);
 
-const openPopover = (targetRef: string) => {
-  listAccountsComponent.value.loadAccounts();
-  popoverTargetRef.value = targetRef;
-};
-
-const loadAccountDetail = async (accountId: string) => {
-  const {pending, data: resp} = await accountDetails(currentUser as User, db, accountId);
-  loading.page = pending.value
-  response.push({connectedAccount: resp.value as InstagramData});
-};
-
-onMounted(async ()=> {
-
-  //Stop processing if user is blank
-  if (!currentUser) {
-    addToast({ message: "Unknown error, Please try again (101)", type: "error", duration: 3000 });
-    return;
-  };
-
-  const q = query(collection(db, "instagram_business"), where("userid", "==", currentUser.uid));
-  const querySnapshot = await getDocs(q);
-  querySnapshot.forEach(async (doc) => {
-    await loadAccountDetail(doc.id);
+const loadAccountDetail = async (accountId: string, accessToken?: string) => {
+  const url = await accountDetails({accountId, accessToken: accessToken as string});
+  const {pending, data: resp, error} = useLazyFetch(url as string);
+  watch(() => pending.value, (newpending) => {
+    loading.page = newpending;
+    if(error.value) {
+      addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
+    } else {
+      response.push({connectedAccount: resp.value as InstagramProfile});
+    }
   });
+};
 
+onMounted(() => { 
+  if (!useIsCurrentUserLoaded().value) {
+    watch(currentUser, (newCurrentUser) => loadAccount());
+  } else {
+    loadAccount();
+  }
 });
 
-const signOutFacebook = async () => {
-  await signOut(auth)
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-    })
-}
+const loadAccount = async () => {
+    //Stop processing if user is blank
+  if (!currentUser.value) {
+    addToast({ message: "Unknown error, Please try again (401)", type: "error", duration: 3000 });
+    return;
+  };
+  
+  userDetails.accessToken = await getAccessToken(currentUser.value.uid, db).catch(error=>addToast({message: error, type: "error", duration: 3000}));   
+  
+  const q = query(collection(db, "instagram_business"), where("userid", "==", currentUser.value.uid));
+  const querySnapshot = await getDocs(q);
+
+  // userDetails.accountId = "17841435790960205";
+
+  // const docRef = doc(db, "instagram_business",  userDetails.accountId);
+  // const docSnap = await getDoc(docRef);
+
+  // if (docSnap.exists()) {
+  //   loadAccountDetail( userDetails.accountId, userDetails.accessToken);
+  //   // loadUserInsights( userDetails.accountId, userDetails.accessToken);
+  // }
+
+  querySnapshot.forEach(async (doc) => {
+    loadAccountDetail(doc.id, userDetails.accessToken);
+    // loadUserInsights(doc.id, accessToken);
+  });
+
+};
 
 </script>

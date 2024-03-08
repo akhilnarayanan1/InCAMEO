@@ -24,7 +24,7 @@ const connectFacebook = () => {
   provider.addScope('instagram_manage_insights');
   provider.addScope('pages_read_engagement');
   provider.setCustomParameters({
-    'display': 'popup'
+    'display': 'popup',
   });
   signInWithPopup(auth, provider)
     .then(async (result) => {
@@ -41,7 +41,7 @@ const connectFacebook = () => {
       });
       navigateTo({path: '/dashboard',})
     })
-    .catch(error=>addToast({message: error, type: "error"}));
+    .catch(error=>addToast({message: error, type: "error", duration: 3000}));
 };
 
 </script>

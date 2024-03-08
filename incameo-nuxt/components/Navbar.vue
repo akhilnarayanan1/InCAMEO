@@ -23,7 +23,7 @@
         </k-list>
         <k-list-item title="Light/Dark Mode">
           <template #after>
-            <k-toggle component="div" class="-my-1" :checked="darkMode" @click="toggleDarkMode"/>
+            <k-toggle component="div" class="-my-1" :checked="darkMode" @click="() => toggleDarkMode()"/>
           </template>
         </k-list-item>
         <k-list-item title="Accent Color" link @click="() => (popoverOpened = false)" />
@@ -56,6 +56,6 @@ const openPopover = (targetRef: string) => {
 
 const signOutFacebook = async () => {
   await signOut(auth)
-    .catch(error=>addToast({message:error, type: "error"}));
+    .catch(error=>addToast({message:error, type: "error", duration: 3000}));
 };
 </script>
