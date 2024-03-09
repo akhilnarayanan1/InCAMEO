@@ -2,17 +2,22 @@
   <k-page>
     <Navbar />
     <Toast />
-    <ListAccounts :accessToken="userDetails.accessToken" />
-
-    <UserInsights 
-      :accountId="userDetails.accountId" 
-      :accessToken="userDetails.accessToken"
-    />
-
-    <div v-for="{connectedAccount} in response">
-      {{ connectedAccount.username }}
+    <ListAccounts :accessToken="userDetails.accessToken" @load-profile="loadProfile"/>
+    <!-- <UserInsights :accountId="userDetails.accountId" :accessToken="userDetails.accessToken" /> -->
+    <div class="aspect-square overflow-hidden w-24 h-24 rounded-full">
+      <img :src="response.connectedAccount.profile_picture_url" alt="Image description">
     </div>
-    
+    <div>{{ response.connectedAccount.username }}</div>
+    <div>{{ response.connectedAccount.id }}</div>
+    <div>{{ response.connectedAccount.ig_id }}</div>
+    <div>{{ response.connectedAccount.name }}</div>
+    <div>{{ response.connectedAccount.media_count }} posts</div>
+    <div>{{ response.connectedAccount.followers_count }} followers</div>
+    <div>{{ response.connectedAccount.follows_count }} following</div>
+    <div>{{ response.connectedAccount.biography }}</div>
+    <!-- <div>
+      {{ response }}
+    </div> -->
   </k-page>
 </template>
 
@@ -26,7 +31,7 @@ import { useFirestore, useIsCurrentUserLoaded } from "vuefire";
 import _ from "lodash";
 
 const loading = reactive({page: true});
-const response: {connectedAccount: InstagramProfile}[]= reactive([]);
+const response: {connectedAccount: InstagramProfile}= reactive({connectedAccount: {} as InstagramProfile});
 const userDetails = reactive({accountId: "",  accessToken: ""});
 
 const router = useRouter();
@@ -43,7 +48,7 @@ const loadAccountDetail = async (accountId: string, accessToken?: string) => {
     if(error.value) {
       addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
     } else {
-      response.push({connectedAccount: resp.value as InstagramProfile});
+      response.connectedAccount = resp.value as InstagramProfile;
     }
   });
 };
@@ -64,25 +69,12 @@ const loadAccount = async () => {
   };
   
   userDetails.accessToken = await getAccessToken(currentUser.value.uid, db).catch(error=>addToast({message: error, type: "error", duration: 3000}));   
-  
-  const q = query(collection(db, "instagram_business"), where("userid", "==", currentUser.value.uid));
-  const querySnapshot = await getDocs(q);
+};
 
-  // userDetails.accountId = "17841435790960205";
 
-  // const docRef = doc(db, "instagram_business",  userDetails.accountId);
-  // const docSnap = await getDoc(docRef);
-
-  // if (docSnap.exists()) {
-  //   loadAccountDetail( userDetails.accountId, userDetails.accessToken);
-  //   // loadUserInsights( userDetails.accountId, userDetails.accessToken);
-  // }
-
-  querySnapshot.forEach(async (doc) => {
-    loadAccountDetail(doc.id, userDetails.accessToken);
-    // loadUserInsights(doc.id, accessToken);
-  });
-
+const loadProfile = async (args: {accountId: string, accessToken: string}) => {
+  const {accountId, accessToken} = args;
+  loadAccountDetail(accountId, accessToken);
 };
 
 </script>

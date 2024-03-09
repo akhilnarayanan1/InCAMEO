@@ -47,6 +47,7 @@ const popoverTargetRef = ref("");
 const toggleDarkMode = () => {
   darkMode.value = !darkMode.value;
   document.documentElement.classList.toggle('dark');
+  darkMode.value ? setAppLighting('dark') : setAppLighting('light');
 };
 
 const openPopover = (targetRef: string) => {

@@ -40,6 +40,7 @@ const loading = ref(true);
 const db =  useFirestore();
 const currentUser = useCurrentUser();
 const props = defineProps<{accessToken: string}>();
+const emit = defineEmits(["loadProfile"]);
 
 const openPopover = (targetRef: string) => {
   popoverTargetRef.value = targetRef;
@@ -58,7 +59,8 @@ const saveInstgramBusinessAccount = async (instagram_business_account_id: string
     }, { merge: true })
     .then(()=>{
       popoverOpened.value = false;
-      addToast({message: "Account added succesfully!", type:"success", duration: 3000});
+      addToast({message: "Account set as default", type:"success", duration: 3000});
+      emit("loadProfile", {accountId: instagram_business_account_id, accessToken: props.accessToken});
     })
     .catch(error => {
       popoverOpened.value = false;

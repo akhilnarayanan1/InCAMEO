@@ -3,28 +3,28 @@ type UserInsightsDuration = "last_1_day" | "last_2_day" | "last_7_days" | "last_
 type DurationTypes = "this_week" | "this_month" | "last_30_days" | "last_14_days" | "last_90_days" | "prev_month";
 
 interface AlertData{
-  message: string,
-  type: ErrorTypes,
-  source: 'ui' | 'server'
-  fieldid: string,
+  message: string;
+  type: ErrorTypes;
+  source: 'ui' | 'server';
+  fieldid: string;
 };
 
 type ToastWithDuration = {
-  message: string,
-  type: ErrorTypes,
-  duration: number,
+  duration: number;
 };
 
 type ToastWithRun = {
-  message: string,
-  type: ErrorTypes,
   run: {
-    feature: () => void,
-    message: string,
+    feature: () => void;
+    message: string;
   },
 };
 
-type ToastData = ToastWithDuration | ToastWithRun;
+type ToastData = {
+  id?: string;
+  message: string;
+  type: ErrorTypes;
+} & (ToastWithDuration | ToastWithRun);
 
 interface InstagramProfile {
   biography: string;
@@ -33,7 +33,9 @@ interface InstagramProfile {
   username: string;
   name: string;
   profile_picture_url: string;
-  media_count: number
+  media_count: number;
+  id: number;
+  ig_id: string;
 };
 
 interface InstagramData {
