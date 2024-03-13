@@ -1,8 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 
-import konstaConfig from "konsta/config";
-
-module.exports = konstaConfig({
+module.exports = {
   content: [
     "./components/**/*.{js,vue,ts}",
     "./layouts/**/*.vue",
@@ -18,6 +16,6 @@ module.exports = konstaConfig({
   variants: {
     extend: {},
   },
-  plugins: [],
-});
+  plugins: [require("daisyui")],
+};
 

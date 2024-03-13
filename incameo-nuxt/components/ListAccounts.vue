@@ -1,50 +1,51 @@
-<template>
-    <k-button class="popover-button" @click="() => openPopover('.popover-button')" rounded>LOAD ACCOUNT</k-button>
-    <k-popover :opened="popoverOpened" :target="popoverTargetRef" @backdropclick="() => (popoverOpened = false)">
-      <k-block v-if="loading" class="text-center">
-        <k-preloader />
-      </k-block>
-      <k-list v-else>
-        <k-block-title class="mb-0">Instagram Business Accounts</k-block-title>
-        <div v-for="{picture, username, instagram_business_account} in response.connectedAccount.data">
-          <k-list-item  v-if="instagram_business_account" :title="username" @click="() => saveInstgramBusinessAccount(instagram_business_account.id)" :link="instagram_business_account ? true : false">
-            <template #media>
-              <img :src="picture.data.url" class="rounded-full" width="32" height="32">
-            </template>
-          </k-list-item>
-        </div>
-        <k-block-title class="mb-0">Non-Instagram Business Accounts</k-block-title>
-        <div v-for="{picture, username, instagram_business_account} in response.connectedAccount.data">
-          <k-list-item v-if="!instagram_business_account" :title="username" :link="instagram_business_account ? true : false">
-            <template #media>
-              <img :src="picture.data.url" class="rounded-full" width="32" height="32">
-            </template>
-          </k-list-item>
-        </div>
+<template> 
+    <button class="btn" @click="openDialog()" onclick="listAccountDialog.showModal()">Button</button>
 
-      </k-list>
-    </k-popover>
+    <dialog id="listAccountDialog" class="modal">
+      <div class="modal-box">
+        <div v-if="loading.listAccount">
+          <span class="loading loading-dots loading-lg items-center "></span>
+        </div>
+        <div v-else>
+          <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" ref="listAccountDialogClose">✕</button>
+          </form>
+          <h3 class="py-4 font-bold text-lg">Creator/Business Account(s)</h3>
+          <ul class="menu bg-base-200  rounded-box">
+            <div v-for="{picture, username, instagram_business_account} in response.connectedAccount.data">
+              <li v-if="instagram_business_account">
+                <a @click="saveInstgramBusinessAccount(instagram_business_account.id)"><img :src="picture.data.url" class="rounded-full w-6 h-6">{{ username }}</a>
+              </li>
+            </div>
+          </ul>
+          <h3 class="py-4 font-bold text-lg">Personal Account(s) <i>(disabled)</i></h3>
+          <ul class="menu bg-base-200  rounded-box">
+            <div  v-for="{picture, username, instagram_business_account} in response.connectedAccount.data">
+              <li v-if="!instagram_business_account" class="disabled">
+                <a><img :src="picture.data.url" class="rounded-full w-6 h-6">{{ username }}</a>
+              </li>
+            </div>
+          </ul>
+        </div>
+      </div>
+    </dialog>
 </template>
 
 <script setup lang="ts">
-
-import { kButton, kPreloader, kPopover, kBlock, kBlockTitle, kList, kListItem } from "konsta/vue";
 import { type InstagramData } from "@/assets/ts/types";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useIsCurrentUserLoaded } from "vuefire";
 
-const popoverOpened = ref(false);
-const popoverTargetRef = ref("");
-const loading = ref(true);
+const listAccountDialogClose = ref();
+const loading = reactive({page: true, listAccount: false});
 
 const db =  useFirestore();
 const currentUser = useCurrentUser();
 const props = defineProps<{accessToken: string}>();
 const emit = defineEmits(["loadProfile"]);
 
-const openPopover = (targetRef: string) => {
-  popoverTargetRef.value = targetRef;
-  popoverOpened.value = true;
+const openDialog = () => {
+  loading.listAccount = true;
   if (!useIsCurrentUserLoaded().value) {
       watch(currentUser, (newCurrentUser) => loadAccounts());
   } else {
@@ -58,13 +59,15 @@ const saveInstgramBusinessAccount = async (instagram_business_account_id: string
       "lastUpdatedOn": serverTimestamp(),
     }, { merge: true })
     .then(()=>{
-      popoverOpened.value = false;
+      loading.listAccount = false;
       addToast({message: "Account set as default", type:"success", duration: 3000});
       emit("loadProfile", {accountId: instagram_business_account_id, accessToken: props.accessToken});
+      listAccountDialogClose.value.click();
     })
     .catch(error => {
-      popoverOpened.value = false;
+      loading.listAccount = false;
       addToast({message: error, type:"error", duration: 3000});
+      listAccountDialogClose.value.click();
     });
 };
 
@@ -76,18 +79,14 @@ const loadAccounts = async () => {
       addToast({ message: "Unknown error, Please try again (401)", type: "error", duration: 3000 });
       return;
     };
-    popoverOpened.value = true;
-    const url = await listAccounts({accessToken: props.accessToken});
-    const {pending, data: resp, error} = useLazyFetch(url as string)
+    const {pending, data: resp, error} = await listAccounts({accessToken: props.accessToken});
+    loading.listAccount = pending.value;
+    if(error.value) {
+      addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
+    } else {
+      response.connectedAccount = resp.value as InstagramData;
+    }
 
-    watch(() => pending.value, (newpending) => {
-      loading.value = newpending;
-      if(error.value) {
-        addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
-      } else {
-        response.connectedAccount = resp.value as InstagramData;
-      }
-    });
 }    
 
 </script>

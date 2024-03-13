@@ -4,7 +4,7 @@ import _ from "lodash";
 export const toasts = () => useState<ToastData[]>("toasts", () => []);
 
 export const addToast  = (toast: ToastData) => {
-    toast.id = toasts().value.length + 1; // auto populate IDs
+    toast.id = (toasts().value.length + 1).toString(); // auto populate IDs
     // set timeout for toast duration parameter if found
     if (toast.duration) {
         setTimeout(() => {

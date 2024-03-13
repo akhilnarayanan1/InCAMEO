@@ -9,22 +9,16 @@ interface AlertData{
   fieldid: string;
 };
 
-type ToastWithDuration = {
-  duration: number;
-};
-
-type ToastWithRun = {
-  run: {
-    feature: () => void;
-    message: string;
-  },
-};
-
-type ToastData = {
+interface ToastData {
   id?: string;
   message: string;
   type: ErrorTypes;
-} & (ToastWithDuration | ToastWithRun);
+  duration?: number;
+  run?: {
+    feature: () => void;
+    message: string;
+  }
+};
 
 interface InstagramProfile {
   biography: string;
@@ -70,7 +64,16 @@ interface UserInsightsDataTotalValue {
   period: string;
   title: string;
   description: string;
-  total_value: {value: number, breakdowns: [{dimension_keys: [], results: [{dimension_values: [], value: number}]}]};
+  total_value: {value?: number, breakdowns?: [{dimension_keys?: [], results?: [{dimension_values?: [], value?: number}]}]};
+  id: string;
+};
+
+interface UserInsightsDataTimeSeries {
+  name: string;
+  period: string;
+  title: string;
+  description: string;
+  values: [{value: number, end_time: string}];
   id: string;
 };
 
@@ -86,6 +89,26 @@ interface UserInsightsTotalValue {
   }; 
 };
 
+interface UserInsightsTimeSeries {
+  data: UserInsightsDataTimeSeries[] | [];
+  paging: {
+    cursors?: {
+      after: string;
+      before: string;
+    },
+    previous?: string;
+    next?: string;
+  }; 
+};
+
+interface ModifiedUserInsightsTotalValue {
+  data:  UserInsightsDataTotalValue[];
+  paging: {
+    next: string[];
+    previous: string[];
+  }
+};
+
 export type {
   InstagramData,
   InstagramProfile,
@@ -94,4 +117,6 @@ export type {
   DurationTypes,
   AlertData,
   ToastData,
+  ModifiedUserInsightsTotalValue,
+  UserInsightsTimeSeries,
 };

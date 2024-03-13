@@ -1,58 +1,34 @@
 <template>
-    <k-navbar title="InCAMEO">
-      <template #right>
-        <k-link class="popover-navbar-link" @click="() => openPopover('.popover-navbar-link')" navbar><span class="material-symbols-outlined">more_vert</span></k-link>
-      </template>
-    </k-navbar>
-
-
-    <k-popover :opened="popoverOpened" :target="popoverTargetRef" @backdropclick="() => (popoverOpened = false)">
-      <k-list nested>
-        <k-block-title>App Theme</k-block-title>
-        <k-list strong inset>
-          <k-list-item label title="Material Theme">
-            <template #media>
-              <k-radio component="div" class="-my-1" :checked="theme === 'material'" @change="() => setAppTheme('material')"/>
-            </template>
-          </k-list-item>
-          <k-list-item label title="iOS Theme">
-            <template #media>
-              <k-radio component="div" class="-my-1" :checked="theme === 'ios'" @change="() => setAppTheme('ios')"/>
-            </template>
-          </k-list-item>
-        </k-list>
-        <k-list-item title="Light/Dark Mode">
-          <template #after>
-            <k-toggle component="div" class="-my-1" :checked="darkMode" @click="() => toggleDarkMode()"/>
-          </template>
-        </k-list-item>
-        <k-list-item title="Accent Color" link @click="() => (popoverOpened = false)" />
-        <k-list-item title="Signout" link @click="signOutFacebook" />
-      </k-list>
-    </k-popover>
+  <div class="navbar bg-base-100">
+    <div class="flex-1">
+      <a class="btn btn-ghost text-xl">daisyUI</a>
+    </div>
+    <div class="flex-none">
+        <div class="dropdown dropdown-end">
+          <div tabindex="0" role="button" class="btn btn-square btn-ghost rounded-btn">
+            <span class="material-symbols-outlined">more_vert</span>
+          </div>
+          <ul tabindex="0" class="menu dropdown-content z-[1] p-2 shadow-xl rounded-box w-52 mt-4">
+            <li><a>Light/Dark Mode</a></li>
+            <li><a @click="signOutFacebook">Signout</a></li>
+          </ul>
+        </div>
+    </div>
+  </div>
 </template>
 
 
 <script setup lang="ts">
-import { kNavbar, kList, kListItem, kLink, kPopover, kToggle, kBlockTitle, kRadio, useTheme } from 'konsta/vue';
 import { signOut } from "firebase/auth";
 
-const theme = useTheme();
 const auth = useFirebaseAuth()!;
 
 const darkMode = ref(false);
-const popoverOpened = ref(false);
-const popoverTargetRef = ref("");
 
 const toggleDarkMode = () => {
   darkMode.value = !darkMode.value;
   document.documentElement.classList.toggle('dark');
   darkMode.value ? setAppLighting('dark') : setAppLighting('light');
-};
-
-const openPopover = (targetRef: string) => {
-    popoverTargetRef.value = targetRef;
-    popoverOpened.value = true;
 };
 
 const signOutFacebook = async () => {

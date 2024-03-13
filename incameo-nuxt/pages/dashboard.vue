@@ -1,9 +1,9 @@
 <template>
-  <k-page>
     <Navbar />
     <Toast />
     <ListAccounts :accessToken="userDetails.accessToken" @load-profile="loadProfile"/>
-    <!-- <UserInsights :accountId="userDetails.accountId" :accessToken="userDetails.accessToken" /> -->
+    <!-- {{ response.connectedAccount }} -->
+    <UserInsights :accountId="userDetails.accountId" :accessToken="userDetails.accessToken" ref="userInsightChild" />
     <div class="aspect-square overflow-hidden w-24 h-24 rounded-full">
       <img :src="response.connectedAccount.profile_picture_url" alt="Image description">
     </div>
@@ -18,14 +18,12 @@
     <!-- <div>
       {{ response }}
     </div> -->
-  </k-page>
+
 </template>
 
 <script setup lang="ts">
-
-import { kPage, kCard, kButton } from "konsta/vue";
 import { signOut, type User } from "firebase/auth";
-import type { InstagramProfile, UserInsightsTotalValue } from "@/assets/ts/types";
+import type { InstagramProfile, UserInsightsTotalValue, UserInsightsDuration } from "@/assets/ts/types";
 import { getDocs, doc, query, collection, where, getDoc} from "firebase/firestore";
 import { useFirestore, useIsCurrentUserLoaded } from "vuefire";
 import _ from "lodash";
@@ -33,6 +31,7 @@ import _ from "lodash";
 const loading = reactive({page: true});
 const response: {connectedAccount: InstagramProfile}= reactive({connectedAccount: {} as InstagramProfile});
 const userDetails = reactive({accountId: "",  accessToken: ""});
+const userInsightChild = ref();
 
 const router = useRouter();
 const db = useFirestore();
@@ -41,16 +40,21 @@ const currentUser = useCurrentUser();
 watchEffect(() => loading.page = currentUser == undefined);
 
 const loadAccountDetail = async (accountId: string, accessToken?: string) => {
-  const url = await accountDetails({accountId, accessToken: accessToken as string});
-  const {pending, data: resp, error} = useLazyFetch(url as string);
-  watch(() => pending.value, (newpending) => {
-    loading.page = newpending;
-    if(error.value) {
-      addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
-    } else {
-      response.connectedAccount = resp.value as InstagramProfile;
-    }
-  });
+  const {pending, data: resp, error} = await accountDetails({accountId, accessToken: accessToken as string});
+  loading.page = pending.value;
+  if(error.value) {
+    addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
+  } else {
+    response.connectedAccount = resp.value as InstagramProfile;
+  }
+  // watch(() => pending.value, (newpending) => {
+  //   loading.page = newpending;
+  //   if(error.value) {
+  //     addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
+  //   } else {
+  //     response.connectedAccount = resp.value as InstagramProfile;
+  //   }
+  // });
 };
 
 onMounted(() => { 
@@ -74,7 +78,10 @@ const loadAccount = async () => {
 
 const loadProfile = async (args: {accountId: string, accessToken: string}) => {
   const {accountId, accessToken} = args;
+  userDetails.accountId = accountId;
   loadAccountDetail(accountId, accessToken);
+  userInsightChild.value.loadUserInsights1(accountId, 1, accessToken);
+  userInsightChild.value.loadUserInsights2(accountId, 1, accessToken);
 };
 
 </script>

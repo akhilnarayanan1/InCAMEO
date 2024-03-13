@@ -29,7 +29,4 @@ export default defineNuxtConfig({
       measurementId: process.env.FIREBASE_MEASUREMENT_ID
     }
   },
-  build: {
-    transpile: ['konsta'],
-  }
 })
