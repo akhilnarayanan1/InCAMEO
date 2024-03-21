@@ -1,34 +1,71 @@
 <template>
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-            <div class="mx-4">
-              <div role="tablist" class="tabs tabs-lifted shadow-xl">
-                  <template v-for="{id, value, hint} in insightsTabs1.tablist" :key="id"
-                  @click="() => loadUserInsights1(props.accountId, id, props.accessToken)">
-                    <input type="radio" name="days_tab_1" role="tab" class="tab" :aria-label="value" :checked="id==1"
-                    @click="() => loadUserInsights1(props.accountId, id, props.accessToken)"/>
-                    <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6 shadow-xl">
-                      <Line :height="230" id="responseInsight1" :options="chartOptions1" :data="chartData1" />
-                    </div>
-                  </template>
+  <div class="grid grid-cols-1 sm:grid-cols-2">
+    <div class="stat flex flex-row">
+      <div class="stat-figure text-secondary">
+        <div class="avatar online">
+          <div class="w-16 rounded-full">
+            <img :src="props.connectedAccount.profile_picture_url" />
+          </div>
+        </div>
+      </div>
+      <div class="flex-grow">
+        <div class="stat-value whitespace-normal">{{ props.connectedAccount.username }}</div>
+        <div class="stat-title whitespace-normal">{{ props.connectedAccount.name }}</div>
+        <div class="stat-desc whitespace-normal">{{ props.connectedAccount.biography }}</div>
+        <div class="stat-desc whitespace-normal font-semibold">IG_ID: {{ props.connectedAccount.ig_id }}</div>
+        <div class="stat-desc whitespace-normal font-semibold">ID: {{ props.connectedAccount.id }}</div>
+      </div>
+    </div>
+    <div class="stats stats-vertical lg:stats-horizontal overflow-x-hidden">
+  
+      <div class="stat justify-items-center">
+        <div class="stat-title">Media Count</div>
+        <div class="stat-value">{{ props.connectedAccount.media_count }}</div>
+      </div>
+      
+      <div class="stat justify-items-center">
+        <div class="stat-title">Followers Count</div>
+        <div class="stat-value">{{ props.connectedAccount.followers_count }}</div>
+      </div>
+      
+      <div class="stat justify-items-center">
+        <div class="stat-title">Follows count</div>
+        <div class="stat-value">{{ props.connectedAccount.follows_count }}</div>
+      </div>
+      
+    </div>
+  </div>
+    
+    <div class="grid grid-cols-1 xl:grid-cols-2">
+      <div class="mt-4">
+        <div role="tablist" class="tabs tabs-lifted tabs-xs">
+            <template v-for="{id, value, hint} in insightsTabs1.tablist" :key="id"
+            @click="() => loadUserInsights1(props.accountId, id, props.accessToken)">
+              <input type="radio" name="days_tab_1" role="tab" class="tab" :aria-label="hint" :checked="id==1"
+              @click="() => loadUserInsights1(props.accountId, id, props.accessToken)"/>
+              <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6 ">
+                <Line id="responseInsight1" :options="chartOptions1" :data="chartData1" />
               </div>
-            </div>
-            <div class="mx-4">
-              <div role="tablist" class="tabs tabs-lifted shadow-xl">
-                  <template v-for="{id, value, hint} in insightsTabs2.tablist" :key="id">
-                    <input type="radio" name="days_tab_2" role="tab" class="tab" :aria-label="value" :checked="id==1"
-                    @click="() => loadUserInsights2(props.accountId, id, props.accessToken)"/>
-                    <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6 shadow-xl">
-                      <Bar :height="230" id="responseInsight2" :options="chartOptions2" :data="chartData2" />
-                    </div>
-                  </template>
+            </template>
+        </div>
+      </div>
+      <div class="mt-4">
+        <div role="tablist" class="tabs tabs-lifted tabs-xs">
+            <template v-for="{id, value, hint} in insightsTabs2.tablist" :key="id">
+              <input type="radio" name="days_tab_2" role="tab" class="tab" :aria-label="hint" :checked="id==1"
+              @click="() => loadUserInsights2(props.accountId, id, props.accessToken)"/>
+              <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6 ">
+                <Bar id="responseInsight2" :options="chartOptions2" :data="chartData2" />
               </div>
-            </div>
-        </div> 
+            </template>
+        </div>
+      </div>
+  </div> 
         
 </template>
 
 <script setup lang="ts">
-import type {UserInsightsTimeSeries, UserInsightsDuration, ModifiedUserInsightsTotalValue} from "@/assets/ts/types";
+import type {UserInsightsTimeSeries, UserInsightsDuration, ModifiedUserInsightsTotalValue, InstagramProfile} from "@/assets/ts/types";
 import _ from "lodash"; 
 import { Bar, Line } from "vue-chartjs";
 import { epochSinchUntil } from "~/composables/epoch";
@@ -39,22 +76,22 @@ const responseInsights2: {pending: boolean, insights: ModifiedUserInsightsTotalV
 
 const insightsTabs1 = reactive({
     tablist : [
-      {id: 1, value: "last_1_day", hint: "Last 1 Day"},
-      {id: 2, value: "last_2_day", hint: "Last 2 Days"},
-      {id: 3, value: "last_7_days", hint: "Last 7 Days"},
-      {id: 4, value: "last_14_days", hint: "Last 14 Days"},
-      {id: 5, value: "last_30_days", hint: "Last 30 Days"},
+      {id: 1, value: "last_1_day", hint: "1_Day"},
+      {id: 2, value: "last_2_day", hint: "2_Days"},
+      {id: 3, value: "last_7_days", hint: "7_Days"},
+      {id: 4, value: "last_14_days", hint: "14_Days"},
+      {id: 5, value: "last_30_days", hint: "30_Days"},
     ],
     activetab: 1,
 });
 
 const insightsTabs2 = reactive({
     tablist : [
-      {id: 1, value: "last_1_day", hint: "Last 1 Day"},
-      {id: 2, value: "last_2_day", hint: "Last 2 Days"},
-      {id: 3, value: "last_7_days", hint: "Last 7 Days"},
-      {id: 4, value: "last_14_days", hint: "Last 14 Days"},
-      {id: 5, value: "last_30_days", hint: "Last 30 Days"},
+      {id: 1, value: "last_1_day", hint: "1_Day"},
+      {id: 2, value: "last_2_day", hint: "2_Days"},
+      {id: 3, value: "last_7_days", hint: "7_Days"},
+      {id: 4, value: "last_14_days", hint: "14_Days"},
+      {id: 5, value: "last_30_days", hint: "30_Days"},
     ],
     activetab: 1,
 });
@@ -195,6 +232,7 @@ const loadUserInsights2 = async (accountId: string, tabId: number, accessToken?:
 const props = defineProps<{
     accountId: string
     accessToken: string
+    connectedAccount: InstagramProfile
 }>();
 
 defineExpose({
