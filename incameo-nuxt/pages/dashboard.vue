@@ -7,9 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { signOut, type User } from "firebase/auth";
-import type { InstagramProfile, UserInsightsTotalValue, UserInsightsDuration } from "@/assets/ts/types";
-import { getDocs, doc, query, collection, where, getDoc} from "firebase/firestore";
+import type { InstagramProfile } from "@/assets/ts/types";
 import { useFirestore, useIsCurrentUserLoaded } from "vuefire";
 import _ from "lodash";
 
@@ -39,7 +37,7 @@ const loadAccountDetail = async (accountId: string, accessToken?: string) => {
 
 onMounted(() => { 
   if (!useIsCurrentUserLoaded().value) {
-    watch(currentUser, (newCurrentUser) => loadAccount());
+    watch(() => currentUser.value, (newCurrentUser) => loadAccount());
   } else {
     loadAccount();
   }

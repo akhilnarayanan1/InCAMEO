@@ -1,14 +1,15 @@
 <template> 
-    <button class="btn" @click="openDialog()" onclick="listAccountDialog.showModal()">Button</button>
-
-    <dialog id="listAccountDialog" class="modal">
+    <label for="my_modal_6" class="btn" @click="openDialog">Load Accounts</label>
+    
+    <input type="checkbox" id="listAccountDialogInput" class="modal-toggle" v-model="listAccountDialogOpened" />
+    <div id="listAccountDialog" class="modal"  role="dialog">
       <div class="modal-box">
-        <div v-if="loading.listAccount">
-          <span class="loading loading-dots loading-lg items-center "></span>
+        <div v-if="loading.listAccount" class="flex justify-center">
+          <span class="loading loading-dots loading-lg"></span>
         </div>
         <div v-else>
           <form method="dialog">
-            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" ref="listAccountDialogClose">✕</button>
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="listAccountDialogOpened = false">✕</button>
           </form>
           <h3 class="py-4 font-bold text-lg">Creator/Business Account(s)</h3>
           <ul class="menu bg-base-200  rounded-box">
@@ -28,7 +29,7 @@
           </ul>
         </div>
       </div>
-    </dialog>
+    </div >
 </template>
 
 <script setup lang="ts">
@@ -36,7 +37,7 @@ import { type InstagramData } from "@/assets/ts/types";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useIsCurrentUserLoaded } from "vuefire";
 
-const listAccountDialogClose = ref();
+const listAccountDialogOpened = ref(false);
 const loading = reactive({page: true, listAccount: false});
 
 const db =  useFirestore();
@@ -44,10 +45,19 @@ const currentUser = useCurrentUser();
 const props = defineProps<{accessToken: string}>();
 const emit = defineEmits(["loadProfile"]);
 
+onMounted(() => { 
+  watch([() => currentUser.value, () => props.accessToken], ([newCurrentUser, newAccessToken]) => {
+    if(newCurrentUser && newAccessToken) {
+      openDialog();
+    }
+  });
+});
+
 const openDialog = () => {
+  listAccountDialogOpened.value = true;
   loading.listAccount = true;
   if (!useIsCurrentUserLoaded().value) {
-      watch(currentUser, (newCurrentUser) => loadAccounts());
+      watch(() => currentUser, (newCurrentUser) => loadAccounts());
   } else {
     loadAccounts();
   }
@@ -62,12 +72,12 @@ const saveInstgramBusinessAccount = async (instagram_business_account_id: string
       loading.listAccount = false;
       addToast({message: "Account set as default", type:"success", duration: 3000});
       emit("loadProfile", {accountId: instagram_business_account_id, accessToken: props.accessToken});
-      listAccountDialogClose.value.click();
+      listAccountDialogOpened.value = false;
     })
     .catch(error => {
       loading.listAccount = false;
       addToast({message: error, type:"error", duration: 3000});
-      listAccountDialogClose.value.click();
+      listAccountDialogOpened.value = false;
     });
 };
 
@@ -77,14 +87,16 @@ const loadAccounts = async () => {
     //Stop processing if user is blank
     if (!currentUser.value) {
       addToast({ message: "Unknown error, Please try again (401)", type: "error", duration: 3000 });
+      listAccountDialogOpened.value = false;
       return;
     };
     const url = await listAccounts({accessToken: props.accessToken});
     const {pending, data: resp, error} = useLazyFetch(url, {server: false});
-    watch(pending, (newpending) => {
+    watch(() => pending.value, (newpending) => {
       loading.listAccount = newpending;
       if(error.value) {
         addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
+        listAccountDialogOpened.value = false;
       } else {
         response.connectedAccount = resp.value as InstagramData;
       }

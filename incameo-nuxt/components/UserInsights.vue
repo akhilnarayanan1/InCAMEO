@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-2">
+  <div class="grid grid-cols-1 sm:grid-cols-2" v-if="Object.keys(props.connectedAccount).length != 0">
     <div class="stat flex flex-row">
       <div class="stat-figure text-secondary">
         <div class="avatar online">
@@ -37,7 +37,7 @@
   </div>
     
     <div class="grid grid-cols-1 xl:grid-cols-2">
-      <div class="mt-4">
+      <div class="mt-4" v-if="Object.keys(responseInsights1.insights).length != 0">
         <div role="tablist" class="tabs tabs-lifted tabs-xs">
             <template v-for="{id, value, hint} in insightsTabs1.tablist" :key="id"
             @click="() => loadUserInsights1(props.accountId, id, props.accessToken)">
@@ -49,7 +49,7 @@
             </template>
         </div>
       </div>
-      <div class="mt-4">
+      <div class="mt-4"  v-if="Object.keys(responseInsights2.insights).length != 0">
         <div role="tablist" class="tabs tabs-lifted tabs-xs">
             <template v-for="{id, value, hint} in insightsTabs2.tablist" :key="id">
               <input type="radio" name="days_tab_2" role="tab" class="tab" :aria-label="hint" :checked="id==1"
@@ -214,7 +214,7 @@ const loadUserInsights1 = async (accountId: string, tabId: number, accessToken?:
     const duration = insightsTabs1.tablist.find(tab => tab.id === tabId)?.value as UserInsightsDuration;
     let {since, until} = epochSinchUntil(duration);
     const { url1 } = await fetchUserInsightsTimeSeries({accountId, since, until, accessToken: accessToken as string});
-    const {pending: pending1, data: data1, error: error1} = await useLazyAsyncData(async () => {
+    const {pending: pending1, data: data1, error: error1} = useLazyAsyncData(async () => {
         const [resp1] = await Promise.all([
             $fetch(url1),
         ]) as (UserInsightsTotalValue)[];
@@ -239,7 +239,7 @@ const loadUserInsights2 = async (accountId: string, tabId: number, accessToken?:
     const duration = insightsTabs1.tablist.find(tab => tab.id === tabId)?.value as UserInsightsDuration;
     let {since, until} = epochSinchUntil(duration);
     const {url1, url2, url3, url4} = await fetchUserInsightsTotalValue({accountId, since, until, accessToken: accessToken as string});
-    const {pending: pending2, data: data2, error: error2} = await useLazyAsyncData(async () => {
+    const {pending: pending2, data: data2, error: error2} = useLazyAsyncData(async () => {
         const [resp1, resp2, resp3, resp4] = await Promise.all([
             $fetch(url1), $fetch(url2), $fetch(url3), $fetch(url4)
         ]) as (UserInsightsTotalValue)[];
@@ -259,7 +259,7 @@ const loadUserInsights2 = async (accountId: string, tabId: number, accessToken?:
         },
         server: false
     });
-    watch(pending2, (newpending) => {
+    watch(() => pending2.value, (newpending) => {
       responseInsights2.pending = newpending;
       responseInsights2.insights = data2.value?.response as ModifiedUserInsightsTotalValue;
     });   
