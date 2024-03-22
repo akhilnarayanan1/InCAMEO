@@ -37,10 +37,14 @@ const connectFacebook = () => {
         "accessToken": accessToken,
         "updatedAt": serverTimestamp(),
       }, { merge: true })
+      .then(() => {
+        addToast({message: "Facebook connected successfully", type: "success", duration: 3000});
+        navigateTo({path: '/dashboard',})
+      })
       .catch(error => {
-        console.log(error);
+        addToast({message: error, type: "error", duration: 3000});
+        return;
       });
-      navigateTo({path: '/dashboard',})
     })
     .catch(error=>addToast({message: error, type: "error", duration: 3000}));
 };
