@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import type {UserInsightsTimeSeries, UserInsightsDuration, ModifiedUserInsightsTotalValue, InstagramProfile} from "@/assets/ts/types";
+import type {UserInsightsTimeSeries, UserInsightsDuration, ModifiedUserInsightsTotalValue, UserInsightsTotalValue, InstagramProfile} from "@/assets/ts/types";
 import _ from "lodash"; 
 import { Bar, Line } from "vue-chartjs";
 import { epochSinchUntil } from "~/composables/epoch";
@@ -213,20 +213,56 @@ const loadUserInsights1 = async (accountId: string, tabId: number, accessToken?:
     insightsTabs1.activetab = tabId;
     const duration = insightsTabs1.tablist.find(tab => tab.id === tabId)?.value as UserInsightsDuration;
     let {since, until} = epochSinchUntil(duration);
-    responseInsights1.pending = true;
-    const {pending: pending1, data: data1, error: error1} = await fetchUserInsightsTimeSeries({accountId, since, until, accessToken: accessToken as string});
-    responseInsights1.pending = pending1.value;
-    responseInsights1.insights = data1.value?.response as UserInsightsTimeSeries;
+    const { url1 } = await fetchUserInsightsTimeSeries({accountId, since, until, accessToken: accessToken as string});
+    const {pending: pending1, data: data1, error: error1} = await useLazyAsyncData(async () => {
+        const [resp1] = await Promise.all([
+            $fetch(url1),
+        ]) as (UserInsightsTotalValue)[];
+        return {resp1};
+    },
+    {
+        transform:(allResponse) =>{
+            const {resp1} = allResponse;
+            const response = resp1;
+            return {response}
+        },
+        server: false
+    });
+    watch(pending1, (newpending) => {
+      responseInsights1.pending = newpending;
+      responseInsights1.insights = data1.value?.response as UserInsightsTimeSeries;
+    });
 };
 
 const loadUserInsights2 = async (accountId: string, tabId: number, accessToken?: string) => {
     insightsTabs2.activetab = tabId;
     const duration = insightsTabs1.tablist.find(tab => tab.id === tabId)?.value as UserInsightsDuration;
     let {since, until} = epochSinchUntil(duration);
-    responseInsights2.pending = true;
-    const {pending: pending2, data: data2, error: error2} = await fetchUserInsightsTotalValue({accountId, since, until, accessToken: accessToken as string});
-    responseInsights2.pending = pending2.value;
-    responseInsights2.insights = data2.value?.response as ModifiedUserInsightsTotalValue;
+    const {url1, url2, url3, url4} = await fetchUserInsightsTotalValue({accountId, since, until, accessToken: accessToken as string});
+    const {pending: pending2, data: data2, error: error2} = await useLazyAsyncData(async () => {
+        const [resp1, resp2, resp3, resp4] = await Promise.all([
+            $fetch(url1), $fetch(url2), $fetch(url3), $fetch(url4)
+        ]) as (UserInsightsTotalValue)[];
+        return {resp1, resp2, resp3, resp4};
+    },
+    {
+        transform:(allResponse) =>{
+            const {resp1, resp2, resp3, resp4} = allResponse;
+            const response = {
+                data: [...resp1.data, ...resp2.data, ...resp3.data, ...resp4.data],
+                paging: {
+                    next: [resp1.paging.next, resp2.paging.next, resp3.paging.next, resp4.paging.next],
+                    previous: [resp1.paging.previous, resp2.paging.previous, resp3.paging.previous, resp4.paging.previous],
+                }
+            } as ModifiedUserInsightsTotalValue;
+            return {response}
+        },
+        server: false
+    });
+    watch(pending2, (newpending) => {
+      responseInsights2.pending = newpending;
+      responseInsights2.insights = data2.value?.response as ModifiedUserInsightsTotalValue;
+    });   
 };
 
 const props = defineProps<{

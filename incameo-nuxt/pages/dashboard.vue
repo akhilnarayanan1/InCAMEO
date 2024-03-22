@@ -25,21 +25,16 @@ const currentUser = useCurrentUser();
 watchEffect(() => loading.page = currentUser == undefined);
 
 const loadAccountDetail = async (accountId: string, accessToken?: string) => {
-  const {pending, data: resp, error} = await accountDetails({accountId, accessToken: accessToken as string});
-  loading.page = pending.value;
-  if(error.value) {
-    addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
-  } else {
-    response.connectedAccount = resp.value as InstagramProfile;
-  }
-  // watch(() => pending.value, (newpending) => {
-  //   loading.page = newpending;
-  //   if(error.value) {
-  //     addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
-  //   } else {
-  //     response.connectedAccount = resp.value as InstagramProfile;
-  //   }
-  // });
+  const url = await accountDetails({accountId, accessToken: accessToken as string});
+  const {pending, data: resp, error} = useLazyFetch(url, {server: false});
+  watch(() => pending.value, (newpending) => {
+    loading.page = newpending;
+    if(error.value) {
+      addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
+    } else {
+      response.connectedAccount = resp.value as InstagramProfile;
+    }
+  });
 };
 
 onMounted(() => { 
@@ -65,8 +60,8 @@ const loadProfile = async (args: {accountId: string, accessToken: string}) => {
   const {accountId, accessToken} = args;
   userDetails.accountId = accountId;
   loadAccountDetail(accountId, accessToken);
-  // userInsightChild.value.loadUserInsights1(accountId, 1, accessToken);
-  // userInsightChild.value.loadUserInsights2(accountId, 1, accessToken);
+  userInsightChild.value.loadUserInsights1(accountId, 1, accessToken);
+  userInsightChild.value.loadUserInsights2(accountId, 1, accessToken);
 };
 
 </script>

@@ -79,13 +79,17 @@ const loadAccounts = async () => {
       addToast({ message: "Unknown error, Please try again (401)", type: "error", duration: 3000 });
       return;
     };
-    const {pending, data: resp, error} = await listAccounts({accessToken: props.accessToken});
+    const url = await listAccounts({accessToken: props.accessToken});
+    const {pending, data: resp, error} = useLazyFetch(url, {server: false});
+    watch(pending, (newpending) => {
+      loading.listAccount = newpending;
+      if(error.value) {
+        addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
+      } else {
+        response.connectedAccount = resp.value as InstagramData;
+      }
+    });
     loading.listAccount = pending.value;
-    if(error.value) {
-      addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
-    } else {
-      response.connectedAccount = resp.value as InstagramData;
-    }
 
 }    
 

@@ -29,7 +29,8 @@ export const listAccounts = async (args: {user: User, db: Firestore} | {accessTo
         accessToken = await getAccessToken(user.uid, db).catch(error=>addToast({message: error, type: "error", duration: 3000}));
     }
     const url = urlWithoutAT + accessToken;
-    return await useLazyFetch(url, {server: false});
+
+    return url;
 };
 
 
@@ -47,7 +48,8 @@ export const accountDetails = async (args: {accountId: string} & ({user: User, d
         accessToken = await getAccessToken(user.uid, db).catch(error=>addToast({message: error, type: "error", duration: 3000}));
     }
     const url = urlWithoutAT + accessToken;
-    return await useLazyFetch(url, {server: false});
+
+    return url;
 };
 
 export const fetchUserInsightsTimeSeries = async (args: {accountId: string, since: number, until: number} & ({user: User, db: Firestore} | {accessToken: string})) => {
@@ -65,21 +67,7 @@ export const fetchUserInsightsTimeSeries = async (args: {accountId: string, sinc
     `since=${since}&until=${until}&` +
     `access_token=${accessToken}`;
 
-    const responseUserInsights = await useLazyAsyncData(async () => {
-        const [resp1] = await Promise.all([
-            $fetch(url1),
-        ]) as (UserInsightsTotalValue)[];
-        return {resp1};
-    },
-    {
-        transform:(allResponse) =>{
-            const {resp1} = allResponse;
-            const response = resp1; //TODO: transform the response
-            return {response}
-        },
-        server: false
-    });
-    return responseUserInsights ;
+    return { url1 };
 };
 
 export const fetchUserInsightsTotalValue = async (args: {accountId: string, since: number, until: number} & ({user: User, db: Firestore} | {accessToken: string})) => {
@@ -112,27 +100,7 @@ export const fetchUserInsightsTotalValue = async (args: {accountId: string, sinc
     `since=${since}&until=${until}&` +
     `access_token=${accessToken}`;
 
-    const responseUserInsights = await useLazyAsyncData(async () => {
-        const [resp1, resp2, resp3, resp4] = await Promise.all([
-            $fetch(url1), $fetch(url2), $fetch(url3), $fetch(url4)
-        ]) as (UserInsightsTotalValue)[];
-        return {resp1, resp2, resp3, resp4};
-    },
-    {
-        transform:(allResponse) =>{
-            const {resp1, resp2, resp3, resp4} = allResponse;
-            const response = {
-                data: [...resp1.data, ...resp2.data, ...resp3.data, ...resp4.data],
-                paging: {
-                    next: [resp1.paging.next, resp2.paging.next, resp3.paging.next, resp4.paging.next],
-                    previous: [resp1.paging.previous, resp2.paging.previous, resp3.paging.previous, resp4.paging.previous],
-                }
-            } as ModifiedUserInsightsTotalValue;
-            return {response}
-        },
-        server: false
-    });
-    return responseUserInsights;
+    return { url1, url2, url3, url4 };
 };
 
 
@@ -150,5 +118,6 @@ export const searchInstagramAccount = async (args: {accountId: string, username:
         accessToken = await getAccessToken(user.uid, db).catch(error=>addToast({message: error, type: "error", duration: 3000}));
     }
     const url = urlWithoutAT + accessToken;
-    return await useLazyFetch(url, {server: false});
+    
+    return url;
 };
