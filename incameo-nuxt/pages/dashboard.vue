@@ -1,7 +1,6 @@
 <template>
-    <Navbar />
+    <Navbar :access-token="userDetails.accessToken" @load-profile="loadProfile" />
     <SearchUser :accountId="userDetails.accountId" :accessToken="userDetails.accessToken" />
-    <ListAccounts :accessToken="userDetails.accessToken" @load-profile="loadProfile"/>
     <UserInsights :accountId="userDetails.accountId" :accessToken="userDetails.accessToken" :connectedAccount="response.connectedAccount" ref="userInsightChild" />
 
 </template>

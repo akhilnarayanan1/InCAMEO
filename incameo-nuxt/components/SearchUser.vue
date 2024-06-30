@@ -1,7 +1,7 @@
 <template>
-  <form v-if="userLoaded" id="searchUserForm" @submit.prevent="searchUser" class="mx-4">
+  <form id="searchUserForm" @submit.prevent="searchUser" class="mx-4">
     <label class="input input-bordered flex items-center gap-2">
-      <input v-model="searchedUsername" type="text" class="grow" placeholder="Search Account on Instagram" />
+      <input v-model="searchedUsername" type="text" class="grow" placeholder="Search creator/business account on Instagram" />
       <button type="submit" class="btn btn-sm m-2"><span  class="material-symbols-outlined">search</span></button>
     </label>
   </form>
@@ -63,16 +63,15 @@
 <script setup lang="ts">
   const searchedUsername = ref("");
   const searchAccountDialogOpened =  ref(false);
-  const userLoaded = ref(false);
   const props = defineProps<{accountId: string, accessToken: string}>();
 
-  const loading = reactive({searchAccount: false, success: false, error: false});
+  const loading = reactive({searchAccount: false, userLoaded: false});
   const data = reactive({searchedUser: {} as any});
 
   const db = useFirestore();
   const currentUser = useCurrentUser();
 
-  watch(() => currentUser.value, (newCurrentUser) => userLoaded.value = true);
+  watch(() => currentUser.value, (newCurrentUser) => loading.userLoaded = true);
 
   const searchUser = async() => {
     //Stop processing if user is blank
@@ -91,7 +90,7 @@
     
     watch(() => pending.value, (newVal) => {
       if (error.value) {
-        addToast({ message: error.value.data.error.error_user_title, type: "error", duration: 3000 });
+        addToast({ message: error.value.data.error.error_user_msg, type: "error", duration: 3000 });
         searchAccountDialogOpened.value = false;
         return;
       }

@@ -4,6 +4,7 @@
       <a class="btn btn-ghost text-xl">daisyUI</a>
     </div>
     <div class="flex-none">
+      <ListAccounts :accessToken="props.accessToken" @load-profile="loadProfile"/>
         <div class="dropdown dropdown-end">
           <div tabindex="0" role="button" class="btn btn-square btn-ghost rounded-btn">
             <span class="material-symbols-outlined">more_vert</span>
@@ -25,6 +26,9 @@ const auth = useFirebaseAuth()!;
 
 const darkMode = ref(false);
 
+const props = withDefaults(defineProps<{accessToken: string}>(), {accessToken: ''});
+const emit = defineEmits(["loadProfile"]);
+
 const toggleDarkMode = () => {
   darkMode.value = !darkMode.value;
   document.documentElement.classList.toggle('dark');
@@ -35,4 +39,9 @@ const signOutFacebook = async () => {
   await signOut(auth)
     .catch(error=>addToast({message:error, type: "error", duration: 3000}));
 };
+
+const loadProfile = async (args: {accountId: string, accessToken: string}) => {
+  emit("loadProfile", {accountId: args.accountId, accessToken: args.accessToken});
+};
+
 </script>
