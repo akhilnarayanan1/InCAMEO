@@ -15,7 +15,7 @@
           <ul class="menu bg-base-200  rounded-box">
             <div v-for="{picture, username, instagram_business_account} in response.connectedAccount.data">
               <li v-if="instagram_business_account">
-                <a @click="saveInstgramBusinessAccount(instagram_business_account.id)"><img :src="picture.data.url" class="rounded-full w-6 h-6">{{ username }}</a>
+                <a @click="loadInstgramBusinessAccount(instagram_business_account.id)"><img :src="picture.data.url" class="rounded-full w-6 h-6">{{ username }}</a>
               </li>
             </div>
           </ul>
@@ -34,7 +34,6 @@
 
 <script setup lang="ts">
 import { type InstagramData } from "@/assets/ts/types";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useIsCurrentUserLoaded } from "vuefire";
 
 const listAccountDialogOpened = ref(false);
@@ -63,22 +62,11 @@ const openDialog = () => {
   }
 };
 
-const saveInstgramBusinessAccount = async (instagram_business_account_id: string) => {
-    await setDoc(doc(db, "instagram_business", instagram_business_account_id), {
-      "userid": currentUser.value?.uid,
-      "lastUpdatedOn": serverTimestamp(),
-    }, { merge: true })
-    .then(()=>{
-      loading.listAccount = false;
-      addToast({message: "Account set as default", type:"success", duration: 3000});
-      emit("loadProfile", {accountId: instagram_business_account_id, accessToken: props.accessToken});
-      listAccountDialogOpened.value = false;
-    })
-    .catch(error => {
-      loading.listAccount = false;
-      addToast({message: error, type:"error", duration: 3000});
-      listAccountDialogOpened.value = false;
-    });
+const loadInstgramBusinessAccount = async (instagram_business_account_id: string) => {
+    loading.listAccount = false;
+    addToast({message: "Account set as default", type:"success", duration: 3000});
+    emit("loadProfile", {accountId: instagram_business_account_id, accessToken: props.accessToken});
+    listAccountDialogOpened.value = false;
 };
 
 const response: { connectedAccount: InstagramData } = reactive({ connectedAccount: {} as InstagramData });

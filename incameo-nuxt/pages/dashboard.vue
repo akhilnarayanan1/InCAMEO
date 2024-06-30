@@ -1,6 +1,5 @@
 <template>
     <Navbar />
-    <Toast />
     <ListAccounts :accessToken="userDetails.accessToken" @load-profile="loadProfile"/>
     <UserInsights :accountId="userDetails.accountId" :accessToken="userDetails.accessToken" :connectedAccount="response.connectedAccount" ref="userInsightChild" />
 
@@ -16,7 +15,6 @@ const response: {connectedAccount: InstagramProfile}= reactive({connectedAccount
 const userDetails = reactive({accountId: "",  accessToken: ""});
 const userInsightChild = ref();
 
-// const router = useRouter();
 const db = useFirestore();
 const currentUser = useCurrentUser();
 

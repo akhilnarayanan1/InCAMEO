@@ -1,4 +1,4 @@
-import type {InstagramData, UserInsightsDuration, DurationTypes, UserInsightsTotalValue, ModifiedUserInsightsTotalValue} from "@/assets/ts/types";
+import type {InstagramProfile, InstagramData, UserInsightsDuration, DurationTypes, UserInsightsTotalValue, ModifiedUserInsightsTotalValue} from "@/assets/ts/types";
 import { useIsCurrentUserLoaded } from "vuefire";
 import { type User } from "firebase/auth";
 import { doc, getDoc, type Firestore } from "firebase/firestore";
@@ -103,21 +103,57 @@ export const fetchUserInsightsTotalValue = async (args: {accountId: string, sinc
     return { url1, url2, url3, url4 };
 };
 
-
-export const searchInstagramAccount = async (args: {accountId: string, username: string} & ({user: User, db: Firestore} | {accessToken: string})) => {
+export const getOneAccount = async (args: {user: User, db: Firestore} | {accessToken: string}) => {
+    let accountId = "";
     let accessToken = "";
-    const {accountId, username} = args;
-    const urlWithoutAT = `https://graph.facebook.com/${accountId}?` +
-    `fields=business_discovery.username(${username}){followers_count,media_count,media{comments_count,like_count}}&` +
-    `access_token=`;
+    let listAccountURL = "";
+
+    const response: {connectedAccount: InstagramData}= reactive({connectedAccount: {} as InstagramData});
 
     if(("accessToken" in args)) {
         accessToken = args.accessToken;
+        listAccountURL = await listAccounts({accessToken}).catch(error=>addToast({message: error, type: "error", duration: 3000})) as string;
+    } else {
+        const { user, db } = args;
+        listAccountURL = await listAccounts({user, db}).catch(error=>addToast({message: error, type: "error", duration: 3000})) as string;
+    }
+    
+    const {pending, data: resp, error} = await useLazyFetch(listAccountURL, {server: false});
+
+    if(error.value) {
+        addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
+    } else {
+        response.connectedAccount = resp.value as InstagramData;
+        let allInstagramBusinessAccountIds = _.flatMap(
+            response.connectedAccount.data,
+            (account) => account.instagram_business_account?.id ? [account.instagram_business_account.id] : []
+            );
+        accountId = allInstagramBusinessAccountIds.length > 0 ? allInstagramBusinessAccountIds[0] : "";
+    }
+
+    return accountId;
+}
+
+
+export const searchInstagramAccount = async (args: {username: string} & ({user: User, db: Firestore} | {accessToken: string})) => {
+    let accountId = "";
+    let accessToken = "";
+    const {username} = args;
+
+    if(("accessToken" in args)) {
+        accessToken = args.accessToken;
+        accountId = await getOneAccount({accessToken}).catch(error=>addToast({message: error, type: "error", duration: 3000})) as string;
     } else {
         const { user, db } = args;
         accessToken = await getAccessToken(user.uid, db).catch(error=>addToast({message: error, type: "error", duration: 3000}));
+        accountId = await getOneAccount({user, db}).catch(error=>addToast({message: error, type: "error", duration: 3000})) as string;
     }
-    const url = urlWithoutAT + accessToken;
+
+    const urlWithoutAT = `https://graph.facebook.com/${accountId}?` +
+            `fields=business_discovery.username(${username}){profile_picture_url,username,name,` +
+            `id,ig_id,biography,followers_count,follows_count,media_count,media{comments_count,like_count}}&` +
+            `access_token=`;
     
-    return url;
+    return urlWithoutAT + accessToken;
+
 };

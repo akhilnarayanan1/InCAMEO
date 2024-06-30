@@ -38,23 +38,23 @@
     
     <div class="grid grid-cols-1 xl:grid-cols-2">
       <div class="mt-4" v-if="Object.keys(responseInsights1.insights).length != 0">
-        <div role="tablist" class="tabs tabs-lifted tabs-xs">
+        <div role="tablist" class="tabs tabs-lifted tabs-sm">
             <template v-for="{id, value, hint} in insightsTabs1.tablist" :key="id"
             @click="() => loadUserInsights1(props.accountId, id, props.accessToken)">
               <input type="radio" name="days_tab_1" role="tab" class="tab" :aria-label="hint" :checked="id==1"
               @click="() => loadUserInsights1(props.accountId, id, props.accessToken)"/>
-              <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6 ">
+              <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box">
                 <Line id="responseInsight1" :options="chartOptions1" :data="chartData1" />
               </div>
             </template>
         </div>
       </div>
       <div class="mt-4"  v-if="Object.keys(responseInsights2.insights).length != 0">
-        <div role="tablist" class="tabs tabs-lifted tabs-xs">
+        <div role="tablist" class="tabs tabs-lifted tabs-sm">
             <template v-for="{id, value, hint} in insightsTabs2.tablist" :key="id">
               <input type="radio" name="days_tab_2" role="tab" class="tab" :aria-label="hint" :checked="id==1"
               @click="() => loadUserInsights2(props.accountId, id, props.accessToken)"/>
-              <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6 ">
+              <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box">
                 <Bar id="responseInsight2" :options="chartOptions2" :data="chartData2" />
               </div>
             </template>
@@ -112,7 +112,7 @@ const chartOptions1 = {
   maintainAspectRatio: false,
   scales: {
     y : {
-      beginAtZero: true
+      beginAtZero: true,
     }
   }
 };
