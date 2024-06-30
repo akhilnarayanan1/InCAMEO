@@ -1,13 +1,13 @@
 <template>
   <form v-if="userLoaded" id="searchUserForm" @submit.prevent="searchUser" class="mx-4">
-    <label class="input input-bordered flex items-center">
+    <label class="input input-bordered flex items-center gap-2">
       <input v-model="searchedUsername" type="text" class="grow" placeholder="Search Account on Instagram" />
-      <span  type="submit" onclick="my_modal_1.showModal()" class="material-symbols-outlined">search</span>
+      <button type="submit" class="btn btn-sm m-2"><span  class="material-symbols-outlined">search</span></button>
     </label>
   </form>
 
  <!-- Put this part before </body> tag -->
-<input type="checkbox" id="my_modal_6" class="modal-toggle" v-model="searchAccountDialogOpened"/>
+<input type="checkbox" id="modal_search_user" class="modal-toggle" v-model="searchAccountDialogOpened"/>
 <div class="modal" role="dialog">
   <div class="modal-box">
     <div v-if="loading.searchAccount" class="flex justify-center">
@@ -15,7 +15,7 @@
     </div>
     <div v-else>
       <form method="dialog">
-        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="searchAccountDialogOpened = false">✕</button>
+        <button class="btn btn-lg btn-circle btn-ghost absolute right-2 top-2" @click="searchAccountDialogOpened = false">✕</button>
       </form>
       <div class="grid grid-cols-1" v-if="Object.keys(data.searchedUser).length != 0">
         <div class="stat flex flex-row">
@@ -64,6 +64,7 @@
   const searchedUsername = ref("");
   const searchAccountDialogOpened =  ref(false);
   const userLoaded = ref(false);
+  const props = defineProps<{accountId: string, accessToken: string}>();
 
   const loading = reactive({searchAccount: false, success: false, error: false});
   const data = reactive({searchedUser: {} as any});
@@ -84,10 +85,9 @@
     searchAccountDialogOpened.value = true;
 
     const accessToken = await getAccessToken(currentUser.value.uid, db).catch(error=>addToast({message: error, type: "error", duration: 3000}));
-    const url = await searchInstagramAccount({ username: searchedUsername.value, accessToken: accessToken});
+    const url = await searchInstagramAccount({ accountId: props.accountId, username: searchedUsername.value, accessToken: accessToken});
 
     const {pending, data: resp, error} = useFetch(url, {server: false});
-
     
     watch(() => pending.value, (newVal) => {
       if (error.value) {

@@ -103,20 +103,15 @@ export const fetchUserInsightsTotalValue = async (args: {accountId: string, sinc
     return { url1, url2, url3, url4 };
 };
 
-export const getOneAccount = async (args: {user: User, db: Firestore} | {accessToken: string}) => {
+export const getOneAccount = async (args: {accessToken: string}) => {
     let accountId = "";
     let accessToken = "";
     let listAccountURL = "";
 
     const response: {connectedAccount: InstagramData}= reactive({connectedAccount: {} as InstagramData});
 
-    if(("accessToken" in args)) {
-        accessToken = args.accessToken;
-        listAccountURL = await listAccounts({accessToken}).catch(error=>addToast({message: error, type: "error", duration: 3000})) as string;
-    } else {
-        const { user, db } = args;
-        listAccountURL = await listAccounts({user, db}).catch(error=>addToast({message: error, type: "error", duration: 3000})) as string;
-    }
+    accessToken = args.accessToken;
+    listAccountURL = await listAccounts({accessToken}).catch(error=>addToast({message: error, type: "error", duration: 3000})) as string;
     
     const {pending, data: resp, error} = await useLazyFetch(listAccountURL, {server: false});
 
@@ -135,18 +130,22 @@ export const getOneAccount = async (args: {user: User, db: Firestore} | {accessT
 }
 
 
-export const searchInstagramAccount = async (args: {username: string} & ({user: User, db: Firestore} | {accessToken: string})) => {
+export const searchInstagramAccount = async (args: {username: string, accountId?: string} & ({user: User, db: Firestore} | {accessToken: string})) => {
     let accountId = "";
     let accessToken = "";
     const {username} = args;
 
     if(("accessToken" in args)) {
         accessToken = args.accessToken;
-        accountId = await getOneAccount({accessToken}).catch(error=>addToast({message: error, type: "error", duration: 3000})) as string;
     } else {
         const { user, db } = args;
         accessToken = await getAccessToken(user.uid, db).catch(error=>addToast({message: error, type: "error", duration: 3000}));
-        accountId = await getOneAccount({user, db}).catch(error=>addToast({message: error, type: "error", duration: 3000})) as string;
+    }
+
+    if ("accountId" in args && args.accountId !== "") {
+        accountId = args.accountId as string;
+    } else {
+        accountId = await getOneAccount({accessToken}).catch(error=>addToast({message: error, type: "error", duration: 3000})) as string;
     }
 
     const urlWithoutAT = `https://graph.facebook.com/${accountId}?` +

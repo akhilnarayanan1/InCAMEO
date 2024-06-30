@@ -1,6 +1,5 @@
 <template>
     <Navbar />
-    <SearchUser />
     
     <button class="btn btn-primary" @click="connectFacebook">CREATOR/BUSINESS ACCOUNT</button>
 </template>

@@ -1,5 +1,5 @@
 <template> 
-    <label for="my_modal_6" class="btn" @click="openDialog">Load Accounts</label>
+    <label for="model_list_account" class="btn" @click="openDialog">Load Accounts</label>
     
     <input type="checkbox" id="listAccountDialogInput" class="modal-toggle" v-model="listAccountDialogOpened" />
     <div id="listAccountDialog" class="modal"  role="dialog">
@@ -9,18 +9,18 @@
         </div>
         <div v-else>
           <form method="dialog">
-            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="listAccountDialogOpened = false">✕</button>
+            <button class="btn btn-lg btn-circle btn-ghost absolute right-2 top-2" @click="listAccountDialogOpened = false">✕</button>
           </form>
           <h3 class="py-4 font-bold text-lg">Creator/Business Account(s)</h3>
-          <ul class="menu bg-base-200  rounded-box">
+          <ul class="menu bg-base-200 rounded-box">
             <div v-for="{picture, username, instagram_business_account} in response.connectedAccount.data">
               <li v-if="instagram_business_account">
                 <a @click="loadInstgramBusinessAccount(instagram_business_account.id)"><img :src="picture.data.url" class="rounded-full w-6 h-6">{{ username }}</a>
               </li>
             </div>
           </ul>
-          <h3 class="py-4 font-bold text-lg">Personal Account(s) <i>(disabled)</i></h3>
-          <ul class="menu bg-base-200  rounded-box">
+          <h3 class="py-4 font-bold text-lg">Non Creator/Business Account(s) <i>(disabled)</i></h3>
+          <ul class="menu bg-base-200 rounded-box">
             <div  v-for="{picture, username, instagram_business_account} in response.connectedAccount.data">
               <li v-if="!instagram_business_account" class="disabled">
                 <a><img :src="picture.data.url" class="rounded-full w-6 h-6">{{ username }}</a>
