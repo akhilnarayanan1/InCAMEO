@@ -51,6 +51,21 @@
             <div class="stat-value">{{ data.searchedUser.business_discovery.follows_count }}</div>
           </div>
           
+          <div class="stat justify-items-center">
+            <div class="stat-title">Average Likes on Top {{ calculateTotalMedia(data.searchedUser) }}  posts:</div>
+            <div class="stat-value">{{ calculateAverageLikes(data.searchedUser) }}</div>
+          </div>
+
+          <div class="stat justify-items-center">
+            <div class="stat-title">Average Comments on Top {{ calculateTotalMedia(data.searchedUser) }}  posts:</div>
+            <div class="stat-value">{{ calculateAverageComments(data.searchedUser) }}</div>
+          </div>
+
+          <div class="stat justify-items-center">
+            <div class="stat-title">Engagment Rate based on Top {{ calculateTotalMedia(data.searchedUser) }}  posts:</div>
+            <div class="stat-value">{{ calculateEngagementRate(data.searchedUser).toFixed(2) }}%</div>
+          </div>
+          
         </div>
       </div>
       <!-- <p class="py-4">{{ data }}</p> -->
@@ -61,12 +76,14 @@
 </template>
 
 <script setup lang="ts">
+  import type {InstagramDiscovery} from "@/assets/ts/types";
+
   const searchedUsername = ref("");
   const searchAccountDialogOpened =  ref(false);
   const props = defineProps<{accountId: string, accessToken: string}>();
 
   const loading = reactive({searchAccount: false, userLoaded: false});
-  const data = reactive({searchedUser: {} as any});
+  const data = reactive({searchedUser: {} as InstagramDiscovery});
 
   const db = useFirestore();
   const currentUser = useCurrentUser();
@@ -95,7 +112,7 @@
         return;
       }
       loading.searchAccount = false;
-      data.searchedUser = resp.value;
+      data.searchedUser = resp.value as InstagramDiscovery;
     });
   }
 

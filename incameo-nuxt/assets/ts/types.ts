@@ -20,20 +20,7 @@ interface ToastData {
   }
 };
 
-interface InstagramProfile {
-  biography: string;
-  followers_count: number;
-  follows_count: number;
-  username: string;
-  name: string;
-  profile_picture_url: string;
-  media_count: number;
-  id: number;
-  ig_id: string;
-};
-
-interface InstagramData {
-  data: InstagramUser[];
+interface Paging {
   paging: {
     cursors: {
       after: string;
@@ -43,6 +30,32 @@ interface InstagramData {
     next?: string;
   };
 };
+
+interface InstagramProfile {
+  biography: string;
+  followers_count: number;
+  follows_count: number;
+  username: string;
+  name: string;
+  profile_picture_url: string;
+  media_count: number;
+  media?: {
+    data: {comments_count: number, like_count: number, id: string}[];
+    paging: Paging;
+  }
+  id: number;
+  ig_id: string;
+};
+
+interface InstagramData {
+  data: InstagramUser[];
+  paging: Paging;
+};
+
+interface InstagramDiscovery {
+  business_discovery: InstagramProfile;
+  id: string;
+}
   
 interface InstagramUser {
   id: string;
@@ -79,26 +92,12 @@ interface UserInsightsDataTimeSeries {
 
 interface UserInsightsTotalValue {
   data: UserInsightsDataTotalValue[] | [];
-  paging: {
-    cursors?: {
-      after: string;
-      before: string;
-    },
-    previous?: string;
-    next?: string;
-  }; 
+  paging: Paging;
 };
 
 interface UserInsightsTimeSeries {
   data: UserInsightsDataTimeSeries[] | [];
-  paging: {
-    cursors?: {
-      after: string;
-      before: string;
-    },
-    previous?: string;
-    next?: string;
-  }; 
+  paging: Paging;
 };
 
 interface ModifiedUserInsightsTotalValue {
@@ -119,4 +118,5 @@ export type {
   ToastData,
   ModifiedUserInsightsTotalValue,
   UserInsightsTimeSeries,
+  InstagramDiscovery,
 };
