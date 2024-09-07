@@ -36,11 +36,10 @@
     </div>
   </div>
     
-    <div class="grid grid-cols-1 xl:grid-cols-2">
-      <div class="mt-4" v-if="Object.keys(responseInsights1.insights).length != 0">
+  <div class="grid grid-cols-1 xl:grid-cols-2">
+      <div class="mt-4" v-if="responseInsights1.insights">
         <div role="tablist" class="tabs tabs-lifted tabs-sm">
-            <template v-for="{id, value, hint} in insightsTabs1.tablist" :key="id"
-            @click="() => loadUserInsights1(props.accountId, id, props.accessToken)">
+            <template v-for="{id, value, hint} in insightsTabs1.tablist" :key="id">
               <input type="radio" name="days_tab_1" role="tab" class="tab" :aria-label="hint" :checked="id==1"
               @click="() => loadUserInsights1(props.accountId, id, props.accessToken)"/>
               <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box">
@@ -49,7 +48,7 @@
             </template>
         </div>
       </div>
-      <div class="mt-4"  v-if="Object.keys(responseInsights2.insights).length != 0">
+      <div class="mt-4" v-if="responseInsights2.insights">
         <div role="tablist" class="tabs tabs-lifted tabs-sm">
             <template v-for="{id, value, hint} in insightsTabs2.tablist" :key="id">
               <input type="radio" name="days_tab_2" role="tab" class="tab" :aria-label="hint" :checked="id==1"
@@ -65,14 +64,14 @@
 </template>
 
 <script setup lang="ts">
-import type {UserInsightsTimeSeries, UserInsightsDuration, ModifiedUserInsightsTotalValue, UserInsightsTotalValue, InstagramProfile} from "@/assets/ts/types";
+import type {UserInsightsTimeSeries, UserInsightsDuration, ModifiedUserInsightsTotalValue, UserInsightsTotalValue, InstagramProfile, ResponseUserInsightsTimeSeries, ResponseModifiedUserInsightsTotalValue} from "@/assets/ts/types";
 import _ from "lodash"; 
 import { Bar, Line } from "vue-chartjs";
 import { epochSinchUntil } from "~/composables/epoch";
 import type {ChartOptions, ChartData} from "chart.js"
 
-const responseInsights1: {pending: boolean, insights: UserInsightsTimeSeries} = reactive({pending: true, insights: {} as UserInsightsTimeSeries});
-const responseInsights2: {pending: boolean, insights: ModifiedUserInsightsTotalValue} = reactive({pending: true, insights: {} as ModifiedUserInsightsTotalValue});
+const responseInsights1 = reactive({} as ResponseUserInsightsTimeSeries);
+const responseInsights2 = reactive({} as ResponseModifiedUserInsightsTotalValue);
 
 const insightsTabs1 = reactive({
     tablist : [
@@ -175,29 +174,26 @@ const datasets = _.chain(newVal.data)
     const y = _.get(data, 'total_value.value', 0);
     totalValueObject.data.push({ x, y });
     
-    if (_.has(data, 'total_value.breakdowns')) {
-      return _.get(data, 'total_value.breakdowns', [])
-        .flatMap(breakdown => {
-          if (_.has(breakdown, 'results')) {
-            return _.get(breakdown, 'results', []).map(result => {
-              const x = _.get(data, 'name', ".");
-              const y = _.get(result, 'value', 0);
-              const label = _.get(result, 'dimension_values[0]', ".");
-              const stack = _.get(breakdown, 'dimension_keys[0]', ".");
-              const backgroundColor = "#" + Math.floor(Math.random() * 16777215).toString(16).toString();
-              return { label, backgroundColor, stack, data: [{ x, y }] };
-            });
-          } else {
+    return _.get(data, 'total_value.breakdowns', [])
+      .flatMap(breakdown => {
+        if (_.has(breakdown, 'results')) {
+          return _.get(breakdown, 'results', []).map(result => {
             const x = _.get(data, 'name', ".");
-            const y = _.get(data, 'total_value.value', 0);
-            const label = _.get(breakdown, 'dimension_values[0]', ".");
+            const y = _.get(result, 'value', 0);
+            const label = _.get(result, 'dimension_values[0]', ".");
             const stack = _.get(breakdown, 'dimension_keys[0]', ".");
             const backgroundColor = "#" + Math.floor(Math.random() * 16777215).toString(16).toString();
             return { label, backgroundColor, stack, data: [{ x, y }] };
-          }
-        });
-    }
-    return [];
+          });
+        } else {
+          const x = _.get(data, 'name', ".");
+          const y = _.get(data, 'total_value.value', 0);
+          const label = _.get(breakdown, 'dimension_values[0]', ".");
+          const stack = _.get(breakdown, 'dimension_keys[0]', ".");
+          const backgroundColor = "#" + Math.floor(Math.random() * 16777215).toString(16).toString();
+          return { label, backgroundColor, stack, data: [{ x, y }] };
+        }
+      });
   })
   .compact()
   .value();
@@ -214,7 +210,7 @@ const loadUserInsights1 = async (accountId: string, tabId: number, accessToken?:
     const duration = insightsTabs1.tablist.find(tab => tab.id === tabId)?.value as UserInsightsDuration;
     let {since, until} = epochSinchUntil(duration);
     const { url1 } = await fetchUserInsightsTimeSeries({accountId, since, until, accessToken: accessToken as string});
-    const {pending: pending1, data: data1, error: error1} = useLazyAsyncData(async () => {
+    const {status: status1, data: data1, error: error1} = useLazyAsyncData(async () => {
         const [resp1] = await Promise.all([
             $fetch(url1),
         ]) as (UserInsightsTotalValue)[];
@@ -228,10 +224,10 @@ const loadUserInsights1 = async (accountId: string, tabId: number, accessToken?:
         },
         server: false
     });
-    watch(pending1, (newpending) => {
-      responseInsights1.pending = newpending;
+    watch(() => status1.value, (newstatus1) => {
+      responseInsights1.status = newstatus1;
       responseInsights1.insights = data1.value?.response as UserInsightsTimeSeries;
-    });
+  });
 };
 
 const loadUserInsights2 = async (accountId: string, tabId: number, accessToken?: string) => {
@@ -239,7 +235,7 @@ const loadUserInsights2 = async (accountId: string, tabId: number, accessToken?:
     const duration = insightsTabs1.tablist.find(tab => tab.id === tabId)?.value as UserInsightsDuration;
     let {since, until} = epochSinchUntil(duration);
     const {url1, url2, url3, url4} = await fetchUserInsightsTotalValue({accountId, since, until, accessToken: accessToken as string});
-    const {pending: pending2, data: data2, error: error2} = useLazyAsyncData(async () => {
+    const {status: status2, data: data2, error: error2} = useLazyAsyncData(async () => {
         const [resp1, resp2, resp3, resp4] = await Promise.all([
             $fetch(url1), $fetch(url2), $fetch(url3), $fetch(url4)
         ]) as (UserInsightsTotalValue)[];
@@ -259,10 +255,10 @@ const loadUserInsights2 = async (accountId: string, tabId: number, accessToken?:
         },
         server: false
     });
-    watch(() => pending2.value, (newpending) => {
-      responseInsights2.pending = newpending;
+    watch(() => status2.value, (newstatus2) => {
+      responseInsights2.status = newstatus2;
       responseInsights2.insights = data2.value?.response as ModifiedUserInsightsTotalValue;
-    });   
+  });   
 };
 
 const props = defineProps<{

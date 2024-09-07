@@ -72,12 +72,17 @@ interface InstagramUser {
   username: string;
 };
 
+type BreakDown = {
+  dimension_keys?: [], 
+  results?: [{dimension_values?: [], value?: number}]
+}
+
 interface UserInsightsDataTotalValue {
   name: string;
   period: string;
   title: string;
   description: string;
-  total_value: {value?: number, breakdowns?: [{dimension_keys?: [], results?: [{dimension_values?: [], value?: number}]}]};
+  total_value: {value?: number, breakdowns?: BreakDown[]};
   id: string;
 };
 
@@ -90,14 +95,12 @@ interface UserInsightsDataTimeSeries {
   id: string;
 };
 
-interface UserInsightsTotalValue {
+interface UserInsightsTotalValue extends Paging {
   data: UserInsightsDataTotalValue[] | [];
-  paging: Paging;
 };
 
-interface UserInsightsTimeSeries {
+interface UserInsightsTimeSeries extends Paging {
   data: UserInsightsDataTimeSeries[] | [];
-  paging: Paging;
 };
 
 interface ModifiedUserInsightsTotalValue {
@@ -106,6 +109,16 @@ interface ModifiedUserInsightsTotalValue {
     next: string[];
     previous: string[];
   }
+};
+
+interface ResponseUserInsightsTimeSeries {
+  status: string;
+  insights: UserInsightsTimeSeries
+};
+
+interface ResponseModifiedUserInsightsTotalValue {
+  status: string;
+  insights: ModifiedUserInsightsTotalValue;
 };
 
 export type {
@@ -119,4 +132,6 @@ export type {
   ModifiedUserInsightsTotalValue,
   UserInsightsTimeSeries,
   InstagramDiscovery,
+  ResponseUserInsightsTimeSeries,
+  ResponseModifiedUserInsightsTotalValue,
 };

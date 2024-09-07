@@ -17,7 +17,9 @@
           <ul class="menu bg-base-200 rounded-box">
             <div v-for="{picture, username, instagram_business_account} in response.connectedAccount.data">
               <li v-if="instagram_business_account">
-                <a @click="loadInstgramBusinessAccount(instagram_business_account.id)"><img :src="picture.data.url" class="rounded-full w-6 h-6">{{ username }}</a>
+                <a @click="loadInstgramBusinessAccount(instagram_business_account.id)">
+                  <img :src="picture.data.url" class="rounded-full w-6 h-6">{{ username }}
+                </a>
               </li>
             </div>
           </ul>
