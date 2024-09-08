@@ -74,7 +74,7 @@ interface InstagramUser {
 
 type BreakDown = {
   dimension_keys?: [], 
-  results?: [{dimension_values?: [], value?: number}]
+  results?: [{dimension_values?: string[], value?: number}]
 }
 
 interface UserInsightsDataTotalValue {

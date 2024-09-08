@@ -35,8 +35,16 @@
       
     </div>
   </div>
+
+    <div role="tablist" class="tabs tabs-lifted tabs-lg px-4">
+      <template v-for="{id, value, hint} in insightsTabs1.tablist" :key="id">
+        <input type="radio" name="days_tab_2" role="tab" class="tab" :aria-label="hint" :checked="id==1"
+        @click="() => loadUserInsights2(props.accountId, id, props.accessToken)"/>
+          <UserInsights2 :response="responseInsights2"/>
+      </template>
+    </div>
     
-  <div class="grid grid-cols-1 xl:grid-cols-2">
+  <div class="grid grid-cols-1 xl:grid-cols-1">
       <div class="mt-4" v-if="responseInsights1.insights">
         <div role="tablist" class="tabs tabs-lifted tabs-sm">
             <template v-for="{id, value, hint} in insightsTabs1.tablist" :key="id">
@@ -48,7 +56,7 @@
             </template>
         </div>
       </div>
-      <div class="mt-4" v-if="responseInsights2.insights">
+      <!-- <div class="mt-4" v-if="responseInsights2.insights">
         <div role="tablist" class="tabs tabs-lifted tabs-sm">
             <template v-for="{id, value, hint} in insightsTabs2.tablist" :key="id">
               <input type="radio" name="days_tab_2" role="tab" class="tab" :aria-label="hint" :checked="id==1"
@@ -57,8 +65,8 @@
                 <Bar id="responseInsight2" :options="chartOptions2" :data="chartData2" />
               </div>
             </template>
-        </div>
-      </div>
+        </div> 
+      </div>-->
   </div> 
         
 </template>
@@ -75,11 +83,11 @@ const responseInsights2 = reactive({} as ResponseModifiedUserInsightsTotalValue)
 
 const insightsTabs1 = reactive({
     tablist : [
-      {id: 1, value: "last_1_day", hint: "1_Day"},
-      {id: 2, value: "last_2_day", hint: "2_Days"},
-      {id: 3, value: "last_7_days", hint: "7_Days"},
-      {id: 4, value: "last_14_days", hint: "14_Days"},
-      {id: 5, value: "last_30_days", hint: "30_Days"},
+      {id: 1, value: "last_1_day", hint: "1 Day"},
+      {id: 2, value: "last_2_day", hint: "2 Days"},
+      {id: 3, value: "last_7_days", hint: "7 Days"},
+      {id: 4, value: "last_14_days", hint: "14 Days"},
+      {id: 5, value: "last_30_days", hint: "30 Days"},
     ],
     activetab: 1,
 });

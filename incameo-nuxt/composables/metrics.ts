@@ -1,4 +1,4 @@
-import type { InstagramDiscovery } from "@/assets/ts/types";
+import type { InstagramDiscovery, ResponseModifiedUserInsightsTotalValue } from "@/assets/ts/types";
 import _ from "lodash";
 
 export const calculateTotalMedia = (response: InstagramDiscovery) => {
@@ -47,4 +47,25 @@ export const calculateEngagementRate = (response: InstagramDiscovery) => {
     const correctedEngagmentRate = isNaN(engagmentRate) ? 0 : engagmentRate;
 
     return correctedEngagmentRate * 100;
+};
+
+export const calculateInsights = (response: ResponseModifiedUserInsightsTotalValue, keyToFind: string) => {
+    return _.find(response.insights?.data, ['name', keyToFind])?.total_value.value || 0;
+};
+
+export const calculateInsightsFollowsAndUnfollows = (response: ResponseModifiedUserInsightsTotalValue): {follows:number, unfollows:number}[]=> {
+    return _.defaultTo(_.find(response.insights?.data, ['name', 'follows_and_unfollows'])?.
+        total_value.breakdowns?.map((breakdown) => {
+            let follows = 0;
+            let unfollows = 0;
+            breakdown.results?.forEach((result) => {
+                if (result.dimension_values?.[0] === 'FOLLOWER') {
+                    follows = result.value || 0;
+                }
+                if (result.dimension_values?.[0] === 'NON_FOLLOWER') {
+                    unfollows = result.value || 0;
+                }
+            });
+        return {follows, unfollows};
+    }), [{follows: 0, unfollows: 0}]);
 };
