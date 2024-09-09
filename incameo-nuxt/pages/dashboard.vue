@@ -22,9 +22,9 @@ watchEffect(() => loading.page = currentUser == undefined);
 
 const loadAccountDetail = async (accountId: string, accessToken?: string) => {
   const url = await accountDetails({accountId, accessToken: accessToken as string});
-  const {pending, data: resp, error} = useLazyFetch(url, {server: false});
-  watch(() => pending.value, (newpending) => {
-    loading.page = newpending;
+  const {status, data: resp, error} = useLazyFetch(url, {server: false});
+  watch(() => status.value, (newstatus) => {
+    loading.page = newstatus != "pending" ? false : true;
     if(error.value) {
       addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
     } else {

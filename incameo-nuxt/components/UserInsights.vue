@@ -36,38 +36,36 @@
     </div>
   </div>
 
-    <div role="tablist" class="tabs tabs-lifted tabs-lg px-4">
-      <template v-for="{id, value, hint} in insightsTabs1.tablist" :key="id">
-        <input type="radio" name="days_tab_2" role="tab" class="tab" :aria-label="hint" :checked="id==1"
-        @click="() => loadUserInsights2(props.accountId, id, props.accessToken)"/>
-          <UserInsights2 :response="responseInsights2"/>
-      </template>
-    </div>
-    
-  <div class="grid grid-cols-1 xl:grid-cols-1">
-      <div class="mt-4" v-if="responseInsights1.insights">
-        <div role="tablist" class="tabs tabs-lifted tabs-sm">
-            <template v-for="{id, value, hint} in insightsTabs1.tablist" :key="id">
-              <input type="radio" name="days_tab_1" role="tab" class="tab" :aria-label="hint" :checked="id==1"
-              @click="() => loadUserInsights1(props.accountId, id, props.accessToken)"/>
-              <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box">
-                <Line id="responseInsight1" :options="chartOptions1" :data="chartData1" />
-              </div>
-            </template>
+  <div class="divider"></div>
+ 
+
+      <div class="dropdown">
+        <div tabindex="0" role="button" class="btn btn-outline">
+          <div>{{ _.find(insightsTabs2.tablist, ['id', insightsTabs2.activetab])?.hint }}</div>
+          <span class="material-symbols-outlined">keyboard_arrow_down</span>
         </div>
+        <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+          <template v-for="{id, hint} in insightsTabs2.tablist" :key="id">
+            <li><a @click="() => loadUserInsights2(props.accountId, id, props.accessToken)">{{ hint }}</a></li>
+          </template>
+        </ul>
       </div>
-      <!-- <div class="mt-4" v-if="responseInsights2.insights">
-        <div role="tablist" class="tabs tabs-lifted tabs-sm">
-            <template v-for="{id, value, hint} in insightsTabs2.tablist" :key="id">
-              <input type="radio" name="days_tab_2" role="tab" class="tab" :aria-label="hint" :checked="id==1"
-              @click="() => loadUserInsights2(props.accountId, id, props.accessToken)"/>
-              <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box">
-                <Bar id="responseInsight2" :options="chartOptions2" :data="chartData2" />
-              </div>
-            </template>
-        </div> 
-      </div>-->
-  </div> 
+      <UserInsights2 :response="responseInsights2" />
+
+  <div class="divider"></div>
+
+  <div class="mt-4" v-if="responseInsights1.insights">
+    <div role="tablist" class="tabs tabs-lifted tabs-sm">
+        <template v-for="{id, value, hint} in insightsTabs1.tablist" :key="id">
+          <input type="radio" name="days_tab_1" role="tab" class="tab" :aria-label="hint" :checked="id==1"
+          @click="() => loadUserInsights1(props.accountId, id, props.accessToken)"/>
+          <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box">
+            <Line id="responseInsight1" :options="chartOptions1" :data="chartData1" />
+          </div>
+        </template>
+    </div>
+  </div>
+
         
 </template>
 
@@ -94,11 +92,11 @@ const insightsTabs1 = reactive({
 
 const insightsTabs2 = reactive({
     tablist : [
-      {id: 1, value: "last_1_day", hint: "1_Day"},
-      {id: 2, value: "last_2_day", hint: "2_Days"},
-      {id: 3, value: "last_7_days", hint: "7_Days"},
-      {id: 4, value: "last_14_days", hint: "14_Days"},
-      {id: 5, value: "last_30_days", hint: "30_Days"},
+      {id: 1, value: "last_1_day", hint: "1 Day"},
+      {id: 2, value: "last_2_day", hint: "2 Days"},
+      {id: 3, value: "last_7_days", hint: "7 Days"},
+      {id: 4, value: "last_14_days", hint: "14 Days"},
+      {id: 5, value: "last_30_days", hint: "30 Days"},
     ],
     activetab: 1,
 });
@@ -109,31 +107,12 @@ const chartData1 = ref({
       data: [],
     }]
 });
-const chartData2 = ref({
-    datasets: [{
-      data: [],
-    }]
-});
 
 const chartOptions1 = {
   maintainAspectRatio: false,
   scales: {
     y : {
       beginAtZero: true,
-    }
-  }
-};
-
-const chartOptions2 = {
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: false
-    }
-  },
-  scales: {
-    y : {
-      beginAtZero: true
     }
   }
 };
@@ -205,11 +184,6 @@ const datasets = _.chain(newVal.data)
   })
   .compact()
   .value();
-
-  const ch = [totalValueObject, ...datasets]; 
-  chartData2.value = {
-    datasets: ch as never[],
-  }
 });
 
 

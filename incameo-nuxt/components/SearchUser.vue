@@ -1,10 +1,12 @@
 <template>
-  <form id="searchUserForm" @submit.prevent="searchUser" class="mx-4">
+  <form id="searchUserForm" @submit.prevent="searchUser" class="m-4">
     <label class="input input-bordered flex items-center gap-2">
       <input v-model="searchedUsername" type="text" class="grow" placeholder="Search creator/business account on Instagram" />
       <button type="submit" class="btn btn-sm m-2"><span  class="material-symbols-outlined">search</span></button>
     </label>
   </form>
+  
+  <div class="divider"></div>
 
  <!-- Put this part before </body> tag -->
 <input type="checkbox" id="modal_search_user" class="modal-toggle" v-model="searchAccountDialogOpened"/>
@@ -103,9 +105,9 @@
     const accessToken = await getAccessToken(currentUser.value.uid, db).catch(error=>addToast({message: error, type: "error", duration: 3000}));
     const url = await searchInstagramAccount({ accountId: props.accountId, username: searchedUsername.value, accessToken: accessToken});
 
-    const {pending, data: resp, error} = useFetch(url, {server: false});
+    const {status, data: resp, error} = useFetch(url, {server: false});
     
-    watch(() => pending.value, (newVal) => {
+    watch(() => status.value, (newstatus) => {
       if (error.value) {
         addToast({ message: error.value.data.error.error_user_msg, type: "error", duration: 3000 });
         searchAccountDialogOpened.value = false;

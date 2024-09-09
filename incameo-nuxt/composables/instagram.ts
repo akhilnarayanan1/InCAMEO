@@ -113,7 +113,7 @@ export const getOneAccount = async (args: {accessToken: string}) => {
     accessToken = args.accessToken;
     listAccountURL = await listAccounts({accessToken}).catch(error=>addToast({message: error, type: "error", duration: 3000})) as string;
     
-    const {pending, data: resp, error} = await useLazyFetch(listAccountURL, {server: false});
+    const {status, data: resp, error} = await useLazyFetch(listAccountURL, {server: false});
 
     if(error.value) {
         addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});

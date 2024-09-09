@@ -83,9 +83,9 @@ const loadAccounts = async () => {
       return;
     };
     const url = await listAccounts({accessToken: props.accessToken});
-    const {pending, data: resp, error} = useLazyFetch(url, {server: false});
-    watch(() => pending.value, (newpending) => {
-      loading.listAccount = newpending;
+    const {status, data: resp, error} = useLazyFetch(url, {server: false});
+    watch(() => status.value, (newstatus) => {
+      loading.listAccount = newstatus != "pending" ? false : true;
       if(error.value) {
         addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
         listAccountDialogOpened.value = false;
@@ -93,7 +93,7 @@ const loadAccounts = async () => {
         response.connectedAccount = resp.value as InstagramData;
       }
     });
-    loading.listAccount = pending.value;
+    loading.listAccount = status.value != "pending" ? false : true;
 
 }    
 

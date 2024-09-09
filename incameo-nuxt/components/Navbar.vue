@@ -26,7 +26,7 @@ const auth = useFirebaseAuth()!;
 
 const darkMode = ref(false);
 
-const props = withDefaults(defineProps<{accessToken: string}>(), {accessToken: ''});
+const props = withDefaults(defineProps<{accessToken?: string}>(), {accessToken: ''});
 const emit = defineEmits(["loadProfile"]);
 
 const toggleDarkMode = () => {
