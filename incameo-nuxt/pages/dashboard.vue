@@ -11,7 +11,7 @@ import { useFirestore, useIsCurrentUserLoaded } from "vuefire";
 import _ from "lodash";
 
 const loading = reactive({page: true});
-const response: {connectedAccount: InstagramProfile}= reactive({connectedAccount: {} as InstagramProfile});
+const response = reactive({connectedAccount: {} as InstagramProfile});
 const userDetails = reactive({accountId: "",  accessToken: ""});
 const userInsightChild = ref();
 
@@ -20,18 +20,19 @@ const currentUser = useCurrentUser();
 
 watchEffect(() => loading.page = currentUser == undefined);
 
-const loadAccountDetail = async (accountId: string, accessToken?: string) => {
-  const url = await accountDetails({accountId, accessToken: accessToken as string});
-  const {status, data: resp, error} = useLazyFetch(url, {server: false});
-  watch(() => status.value, (newstatus) => {
-    loading.page = newstatus != "pending" ? false : true;
-    if(error.value) {
-      addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
-    } else {
-      response.connectedAccount = resp.value as InstagramProfile;
-    }
-  });
-};
+const {status, error, data, execute: loadAccountDetails} = useLazyAsyncData('load-account-details', async () => {
+  const url = await accountDetails({accountId: userDetails.accountId, accessToken: userDetails.accessToken});
+  return $fetch(url);
+}, {immediate: false, server: false});
+
+watch(() => status.value, (newstatus) => {
+  if(error.value) {
+    const errorMessage = (error.value as any)?.data?.error?.message || error.value.message;
+    addToast({message: errorMessage, type: "error", duration: 3000});
+  } else {
+    response.connectedAccount = data.value as InstagramProfile;
+  }
+});
 
 onMounted(() => { 
   if (!useIsCurrentUserLoaded().value) {
@@ -55,9 +56,9 @@ const loadAccount = async () => {
 const loadProfile = async (args: {accountId: string, accessToken: string}) => {
   const {accountId, accessToken} = args;
   userDetails.accountId = accountId;
-  loadAccountDetail(accountId, accessToken);
-  userInsightChild.value.loadUserInsights1(accountId, 1, accessToken);
-  userInsightChild.value.loadUserInsights2(accountId, 1, accessToken);
+  await loadAccountDetails();
+  userInsightChild.value.fetchUserInsightsTVForId(5);
+  userInsightChild.value.fetchUserInsightsTSForId(5);
 };
 
 </script>

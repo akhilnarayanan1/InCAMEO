@@ -75,26 +75,20 @@ const loadInstgramBusinessAccount = async (instagram_business_account_id: string
 
 const response: { connectedAccount: InstagramData } = reactive({ connectedAccount: {} as InstagramData });
 
-const loadAccounts = async () => {
-    //Stop processing if user is blank
-    if (!currentUser.value) {
-      addToast({ message: "Unknown error, Please try again (401)", type: "error", duration: 3000 });
-      listAccountDialogOpened.value = false;
-      return;
-    };
-    const url = await listAccounts({accessToken: props.accessToken});
-    const {status, data: resp, error} = useLazyFetch(url, {server: false});
-    watch(() => status.value, (newstatus) => {
-      loading.listAccount = newstatus != "pending" ? false : true;
-      if(error.value) {
-        addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
-        listAccountDialogOpened.value = false;
-      } else {
-        response.connectedAccount = resp.value as InstagramData;
-      }
-    });
-    loading.listAccount = status.value != "pending" ? false : true;
+const {status, data: resp, error, execute: loadAccounts} = useLazyAsyncData('load-accounts', async() => {
+  const url = await listAccounts({accessToken: props.accessToken});
+  return $fetch(url);
+}, {immediate: false, server: false});
 
-}    
+watch(() => status.value, (newstatus) => {
+  loading.listAccount = newstatus == "pending";
+  if(error.value) {
+    const errorMessage = (error.value as any)?.data?.error?.message || error.value.message;
+    addToast({message: errorMessage, type: "error", duration: 3000});
+    listAccountDialogOpened.value = false;
+  } else {
+    response.connectedAccount = resp.value as InstagramData;
+  }
+});
 
 </script>
