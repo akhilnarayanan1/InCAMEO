@@ -1,7 +1,7 @@
 <template>
     <Navbar :access-token="userDetails.accessToken" @load-profile="loadProfile" />
     <SearchUser :accountId="userDetails.accountId" :accessToken="userDetails.accessToken" />
-    <UserInsights :accountId="userDetails.accountId" :accessToken="userDetails.accessToken" :connectedAccount="response.connectedAccount" ref="userInsightChild" />
+    <UserInsights :accountId="userDetails.accountId" :accessToken="userDetails.accessToken" :connectedAccount="responseConnectedAccount" ref="userInsightChild" />
 
 </template>
 
@@ -11,7 +11,6 @@ import { useFirestore, useIsCurrentUserLoaded } from "vuefire";
 import _ from "lodash";
 
 const loading = reactive({page: true});
-const response = reactive({connectedAccount: {} as InstagramProfile});
 const userDetails = reactive({accountId: "",  accessToken: ""});
 const userInsightChild = ref();
 
@@ -20,17 +19,15 @@ const currentUser = useCurrentUser();
 
 watchEffect(() => loading.page = currentUser == undefined);
 
-const {status, error, data, execute: loadAccountDetails} = useLazyAsyncData('load-account-details', async () => {
+const {status, error, data: responseConnectedAccount, execute: loadAccountDetails} = useLazyAsyncData('load-account-details', async () => {
   const url = await accountDetails({accountId: userDetails.accountId, accessToken: userDetails.accessToken});
-  return $fetch(url);
+  return $fetch<InstagramProfile>(url);
 }, {immediate: false, server: false});
 
 watch(() => status.value, (newstatus) => {
   if(error.value) {
     const errorMessage = (error.value as any)?.data?.error?.message || error.value.message;
     addToast({message: errorMessage, type: "error", duration: 3000});
-  } else {
-    response.connectedAccount = data.value as InstagramProfile;
   }
 });
 

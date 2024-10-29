@@ -15,7 +15,7 @@
           </form>
           <h3 class="py-4 font-bold text-lg">Creator/Business Account(s)</h3>
           <ul class="menu bg-base-200 rounded-box">
-            <div v-for="{picture, username, instagram_business_account} in response.connectedAccount.data">
+            <div v-for="{picture, username, instagram_business_account} in responseConnectedAccount?.data">
               <li v-if="instagram_business_account">
                 <a @click="loadInstgramBusinessAccount(instagram_business_account.id)">
                   <img :src="picture.data.url" class="rounded-full w-6 h-6">{{ username }}
@@ -25,7 +25,7 @@
           </ul>
           <h3 class="py-4 font-bold text-lg">Non Creator/Business Account(s) <i>(disabled)</i></h3>
           <ul class="menu bg-base-200 rounded-box">
-            <div  v-for="{picture, username, instagram_business_account} in response.connectedAccount.data">
+            <div v-for="{picture, username, instagram_business_account} in responseConnectedAccount?.data">
               <li v-if="!instagram_business_account" class="disabled">
                 <a><img :src="picture.data.url" class="rounded-full w-6 h-6">{{ username }}</a>
               </li>
@@ -73,11 +73,9 @@ const loadInstgramBusinessAccount = async (instagram_business_account_id: string
     listAccountDialogOpened.value = false;
 };
 
-const response: { connectedAccount: InstagramData } = reactive({ connectedAccount: {} as InstagramData });
-
-const {status, data: resp, error, execute: loadAccounts} = useLazyAsyncData('load-accounts', async() => {
+const {status, data: responseConnectedAccount, error, execute: loadAccounts} = useLazyAsyncData('load-accounts', async() => {
   const url = await listAccounts({accessToken: props.accessToken});
-  return $fetch(url);
+  return $fetch<InstagramData>(url);
 }, {immediate: false, server: false});
 
 watch(() => status.value, (newstatus) => {
@@ -86,8 +84,6 @@ watch(() => status.value, (newstatus) => {
     const errorMessage = (error.value as any)?.data?.error?.message || error.value.message;
     addToast({message: errorMessage, type: "error", duration: 3000});
     listAccountDialogOpened.value = false;
-  } else {
-    response.connectedAccount = resp.value as InstagramData;
   }
 });
 

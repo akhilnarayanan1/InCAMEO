@@ -51,14 +51,14 @@
 
   <div class="divider"></div>
   <div class="mt-4">
-    <div role="tablist" class="tabs tabs-lifted tabs-sm">
-        <template v-for="{id, value, hint} in insightsTabs2.tablist" :key="id">
-          <input type="radio" name="days_tab_1" role="tab" class="tab" :aria-label="hint" :checked="id==insightsTabs2.activetab"
-          @click="fetchUserInsightsTSForId(id)"/>
-          <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box">
-            <Line id="responseInsight1" :options="chartOptions1" :data="chartData1" />
-          </div>
-        </template>
+    <div role="tablist" class="tabs tabs-lifted tabs-lg">
+      <template v-for="{id, hint} in insightsTabs2.tablist" :key="id">
+        <input type="radio" name="days_tab_1" role="tab" class="tab" :aria-label="hint" :checked="id==insightsTabs2.activetab" 
+        @click="fetchUserInsightsTSForId(id)"/>
+        <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box">
+          <Line id="responseInsight2" :options="chartOptions" :data="chartData" />
+        </div>
+      </template>
     </div>
   </div>
 
@@ -68,9 +68,9 @@
 <script setup lang="ts">
 import type {UserInsightsTimeSeries, UserInsightsDuration, ModifiedUserInsightsTotalValue, UserInsightsTotalValue, InstagramProfile, ResponseUserInsightsTimeSeries, ResponseModifiedUserInsightsTotalValue} from "@/assets/ts/types";
 import _ from "lodash"; 
-import { Bar, Line } from "vue-chartjs";
+import { Line } from "vue-chartjs";
 import { epochSinchUntil } from "~/composables/epoch";
-import type {ChartOptions, ChartData} from "chart.js"
+import type {ChartOptions, ChartData, ChartDataset} from "chart.js"
 
 const responseInsights1 = reactive({} as ResponseModifiedUserInsightsTotalValue);
 const responseInsights2 = reactive({} as ResponseUserInsightsTimeSeries);
@@ -97,21 +97,17 @@ const insightsTabs2 = reactive({
     activetab: 1,
 });
 
-// // create chartData and chartOptions which will replace data from responseInsights2
-const chartData1 = ref({
-    datasets: [{
-      data: [],
-    }]
-});
+// create chartData and chartOptions which will replace data from responseInsights2
+const chartData = ref<ChartData<'line'>>({datasets: []});
 
-const chartOptions1 = {
+const chartOptions = {
   maintainAspectRatio: false,
   scales: {
     y : {
       beginAtZero: true,
     }
   }
-};
+} as ChartOptions<'line'>;
 
 const getDatetime = (dateTimeString: string) => {
   const dateObject = new Date(dateTimeString);
@@ -124,64 +120,19 @@ const getDatetime = (dateTimeString: string) => {
 };
 
 
-watch(() => responseInsights2.insights, (newVal, oldVal) => {
-  // console.log(toRaw(newVal));
-  const ch = newVal.data.map(data => {
-    const borderColor = "#" + Math.floor(Math.random() * 16777215).toString(16).toString();
-    return {
-      label: data.name,
-      data: data.values.map(value => ({
-        x: getDatetime(value.end_time),
-        y: value.value,
-      })),
-      tension: 0.3,
-      borderColor,
-    }
-  });
-
-  chartData1.value = {
-    datasets: ch as never[],
+watch(() => responseInsights2.insights, (newVal) => {
+  chartData.value = {
+    labels: newVal.data[0].values.map(value => getDatetime(value.end_time)),
+    datasets: newVal.data.map(data => {
+      return {
+        label: data.name,
+        data: data.values.map(value => value.value),
+        tension: 0.3,
+        borderColor: "#" + Math.floor(Math.random() * 16777215).toString(16).toString(),
+      }
+    }) as ChartDataset<'line'>[],
   }
 });
-
-watch(() => responseInsights1.insights, (newVal, oldVal) => { 
-// this took me lot of time to figure out 
-const totalValueObject = {
-    label: 'Total Value',
-    backgroundColor: "#" + Math.floor(Math.random() * 16777215).toString(16).toString(),
-    data: [] as {x: string, y:number}[], // Initially empty array
-};
-const datasets = _.chain(newVal.data)
-  .flatMap(data => {
-    const x = _.get(data, 'name', ".");
-    const y = _.get(data, 'total_value.value', 0);
-    totalValueObject.data.push({ x, y });
-    
-    return _.get(data, 'total_value.breakdowns', [])
-      .flatMap(breakdown => {
-        if (_.has(breakdown, 'results')) {
-          return _.get(breakdown, 'results', []).map(result => {
-            const x = _.get(data, 'name', ".");
-            const y = _.get(result, 'value', 0);
-            const label = _.get(result, 'dimension_values[0]', ".");
-            const stack = _.get(breakdown, 'dimension_keys[0]', ".");
-            const backgroundColor = "#" + Math.floor(Math.random() * 16777215).toString(16).toString();
-            return { label, backgroundColor, stack, data: [{ x, y }] };
-          });
-        } else {
-          const x = _.get(data, 'name', ".");
-          const y = _.get(data, 'total_value.value', 0);
-          const label = _.get(breakdown, 'dimension_values[0]', ".");
-          const stack = _.get(breakdown, 'dimension_keys[0]', ".");
-          const backgroundColor = "#" + Math.floor(Math.random() * 16777215).toString(16).toString();
-          return { label, backgroundColor, stack, data: [{ x, y }] };
-        }
-      });
-  })
-  .compact()
-  .value();
-});
-
 
 const fetchUserInsightsTVForId = (tabId: number) => {
   insightsTabs1.activetab = tabId;
@@ -258,7 +209,7 @@ watch(() => userInsightsTSStatus.value, (newstatus) => {
 const props = defineProps<{
     accountId: string
     accessToken: string
-    connectedAccount: InstagramProfile
+    connectedAccount: InstagramProfile | null
 }>();
 
 defineExpose({

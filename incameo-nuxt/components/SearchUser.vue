@@ -22,53 +22,53 @@
         <form method="dialog">
           <button class="btn btn-lg btn-circle btn-ghost absolute right-2 top-2" @click="searchAccountDialogOpened = false">✕</button>
         </form>
-        <div class="grid grid-cols-1" v-if="Object.keys(data.searchedUser).length != 0">
+        <div class="grid grid-cols-1" v-if="dataSearchedUser && Object.keys(dataSearchedUser).length != 0">
           <div class="stat flex flex-row">
             <div class="stat-figure text-secondary">
               <div class="avatar online">
                 <div class="w-16 rounded-full">
-                  <img :src="data.searchedUser.business_discovery.profile_picture_url" />
+                  <img :src="dataSearchedUser.business_discovery.profile_picture_url" />
                 </div>
               </div>
             </div>
             <div class="flex-grow">
-              <div class="stat-value whitespace-normal">{{ data.searchedUser.business_discovery.username }}</div>
-              <div class="stat-title whitespace-normal">{{ data.searchedUser.business_discovery.name }}</div>
-              <div class="stat-desc whitespace-normal">{{ data.searchedUser.business_discovery.biography }}</div>
-              <div class="stat-desc whitespace-normal font-semibold">IG_ID: {{ data.searchedUser.business_discovery.ig_id }}</div>
-              <div class="stat-desc whitespace-normal font-semibold">ID: {{ data.searchedUser.business_discovery.id }}</div>
+              <div class="stat-value whitespace-normal">{{ dataSearchedUser.business_discovery.username }}</div>
+              <div class="stat-title whitespace-normal">{{ dataSearchedUser.business_discovery.name }}</div>
+              <div class="stat-desc whitespace-normal">{{ dataSearchedUser.business_discovery.biography }}</div>
+              <div class="stat-desc whitespace-normal font-semibold">IG_ID: {{ dataSearchedUser.business_discovery.ig_id }}</div>
+              <div class="stat-desc whitespace-normal font-semibold">ID: {{ dataSearchedUser.business_discovery.id }}</div>
             </div>
           </div>
           <div class="stats stats-vertical">
         
             <div class="stat justify-items-center">
               <div class="stat-title">Media Count</div>
-              <div class="stat-value">{{ data.searchedUser.business_discovery.media_count }}</div>
+              <div class="stat-value">{{ dataSearchedUser.business_discovery.media_count }}</div>
             </div>
             
             <div class="stat justify-items-center">
               <div class="stat-title">Followers Count</div>
-              <div class="stat-value">{{ data.searchedUser.business_discovery.followers_count }}</div>
+              <div class="stat-value">{{ dataSearchedUser.business_discovery.followers_count }}</div>
             </div>
             
             <div class="stat justify-items-center">
               <div class="stat-title">Follows count</div>
-              <div class="stat-value">{{ data.searchedUser.business_discovery.follows_count }}</div>
+              <div class="stat-value">{{ dataSearchedUser.business_discovery.follows_count }}</div>
             </div>
             
             <div class="stat justify-items-center">
-              <div class="stat-title">Average Likes on Top {{ calculateTotalMedia(data.searchedUser) }}  posts:</div>
-              <div class="stat-value">{{ calculateAverageLikes(data.searchedUser) }}</div>
+              <div class="stat-title">Average Likes on Top {{ calculateTotalMedia(dataSearchedUser) }}  posts:</div>
+              <div class="stat-value">{{ calculateAverageLikes(dataSearchedUser) }}</div>
             </div>
 
             <div class="stat justify-items-center">
-              <div class="stat-title">Average Comments on Top {{ calculateTotalMedia(data.searchedUser) }}  posts:</div>
-              <div class="stat-value">{{ calculateAverageComments(data.searchedUser) }}</div>
+              <div class="stat-title">Average Comments on Top {{ calculateTotalMedia(dataSearchedUser) }}  posts:</div>
+              <div class="stat-value">{{ calculateAverageComments(dataSearchedUser) }}</div>
             </div>
 
             <div class="stat justify-items-center">
-              <div class="stat-title">Engagment Rate based on Top {{ calculateTotalMedia(data.searchedUser) }}  posts:</div>
-              <div class="stat-value">{{ calculateEngagementRate(data.searchedUser).toFixed(2) }}%</div>
+              <div class="stat-title">Engagment Rate based on Top {{ calculateTotalMedia(dataSearchedUser) }}  posts:</div>
+              <div class="stat-value">{{ calculateEngagementRate(dataSearchedUser).toFixed(2) }}%</div>
             </div>
             
           </div>
@@ -96,13 +96,13 @@
 
   watch(() => currentUser.value, (newCurrentUser) => loading.userLoaded = true);
 
-  const {status, data: resp, error, execute: searchUser} = useLazyAsyncData('search-user', async() => {
+  const {status, data: dataSearchedUser, error, execute: searchUser} = useLazyAsyncData('search-user', async() => {
 
     const accessToken = await getAccessToken(currentUser.value?.uid || "", db).catch(error=>addToast({message: error, type: "error", duration: 3000}));
     const url = await searchInstagramAccount({ accountId: props.accountId, username: searchedUsername.value, accessToken: accessToken});
 
-    return $fetch(url);
-  });
+    return $fetch<InstagramDiscovery>(url);
+  }, {immediate: false, server: false});
     
   watch(() => status.value, (newstatus) => {
     if (newstatus == "pending") {
@@ -115,8 +115,7 @@
     if (error.value) {
       const errorMessage = (error.value as any)?.data?.error?.message || error.value.message;
       addToast({message: errorMessage, type: "error", duration: 3000});
-    } else {
-      data.searchedUser = resp.value as InstagramDiscovery;
+      searchAccountDialogOpened.value = false;
     }
   });
 

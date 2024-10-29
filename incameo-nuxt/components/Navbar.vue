@@ -1,7 +1,7 @@
 <template>
   <div class="navbar bg-base-100">
     <div class="flex-1">
-      <a class="btn btn-ghost text-xl">daisyUI</a>
+      <a class="btn btn-ghost text-xl">InCAMEO</a>
     </div>
     <div class="flex-none">
       <ListAccounts :accessToken="props.accessToken" @load-profile="loadProfile"/>

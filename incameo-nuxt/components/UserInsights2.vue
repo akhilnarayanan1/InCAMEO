@@ -1,6 +1,6 @@
 <template>
 <!-- <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box"> -->
-<div class="grid grid-cols-1 xl:grid-cols-3">
+<div class="grid grid-cols-1 md:grid-cols-3">
 
     <div class="stats stats-vertical lg:stats-horizontal overflow-x-hidden">
         <div class="stat justify-items-center">
