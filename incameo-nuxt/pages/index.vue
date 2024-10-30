@@ -1,7 +1,10 @@
 <template>
     <Navbar />
     
-    <button class="btn btn-primary" @click="connectFacebook">CREATOR/BUSINESS ACCOUNT</button>
+    <button class="btn btn-primary" @click="connectFacebook">
+      <span v-if="loading.popup" class="loading loading-spinner loading-sm"></span>
+      <span v-else>CREATOR/BUSINESS ACCOUNT</span>
+    </button>
 </template>
 
 <script setup lang="ts">
@@ -10,42 +13,42 @@ import { setDoc, doc, serverTimestamp } from "firebase/firestore";
 
 const auth = useFirebaseAuth()!;
 const db =  useFirestore();
-const user = useCurrentUser();
 const provider = new FacebookAuthProvider();
+provider.addScope('instagram_basic');
+provider.addScope('pages_show_list');
+provider.addScope('instagram_manage_insights');
+provider.addScope('pages_read_engagement');
+provider.addScope('business_management');
+provider.setCustomParameters({
+  'display': 'popup',
+});
 
-const popupOpened = ref(false);
 const loading = reactive({popup: false});
-const response = ref("");
 
 const connectFacebook = () => {
-  provider.addScope('instagram_basic');
-  provider.addScope('pages_show_list');
-  provider.addScope('instagram_manage_insights');
-  provider.addScope('pages_read_engagement');
-  provider.addScope('business_management');
-  provider.setCustomParameters({
-    'display': 'popup',
-  });
+  loading.popup = true;
   signInWithPopup(auth, provider)
-    .then(async (result) => {
-      const userId = result.user.uid;
-      const credential = FacebookAuthProvider.credentialFromResult(result);
-      const accessToken = credential?.accessToken;
-
-      await setDoc(doc(db, "users", userId), {
-        "accessToken": accessToken,
-        "updatedAt": serverTimestamp(),
-      }, { merge: true })
-      .then(() => {
-        addToast({message: "Facebook connected successfully", type: "success", duration: 3000});
-        navigateTo({path: '/dashboard',})
-      })
-      .catch(error => {
-        addToast({message: error, type: "error", duration: 3000});
-        return;
-      });
-    })
-    .catch(error=>addToast({message: error, type: "error", duration: 3000}));
+  .then(result => {
+    const userId = result.user.uid;
+    const credential = FacebookAuthProvider.credentialFromResult(result);
+    const accessToken = credential?.accessToken;
+    return {accessToken, userId};
+  })
+  .then(({accessToken, userId}) => {
+    return setDoc(doc(db, "users", userId), {
+      "accessToken": accessToken,
+      "updatedAt": serverTimestamp(),
+    }, { merge: true });
+  })
+  .then(() => {
+    loading.popup = false;
+    addToast({message: "Facebook connected successfully", type: "success", duration: 3000});
+    navigateTo({path: '/dashboard',});
+  })
+  .catch(error => {
+    loading.popup = false;
+    addToast({message: "cool acool cool acool cool cool acool acool cool acool cool acool cool cool acool acool", type: "error"})
+  });
 };
 
 </script>

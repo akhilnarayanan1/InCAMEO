@@ -1,8 +1,8 @@
 <template>
   <form id="searchUserForm" @submit.prevent="() => searchUser()" class="m-4">
     <label class="input input-bordered flex items-center gap-2">
-      <input v-model="searchedUsername" type="text" class="grow" placeholder="Search creator/business account on Instagram" />
-      <button type="submit" class="btn btn-sm m-2">
+      <input id="searchedUsername" v-model="searchedUsername" type="text" class="grow" placeholder="Search creator/business account on Instagram" />
+      <button type="button" class="btn btn-sm m-2">
         <span v-if="loading.searchAccount" class="loading loading-spinner loading-sm"></span>
         <span v-else class="material-symbols-outlined">search</span>
       </button>

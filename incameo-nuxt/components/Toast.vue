@@ -1,36 +1,50 @@
 <template>
-  <div class="stack">
-    <div class="toast toast-end" v-for="toast in reverseToast(toasts)" :key="toast.id">
-      <div :class="
-      toast.type === 'error' ? 'alert alert-error' :
-      toast.type === 'success' ? 'alert alert-success' :
-      toast.type === 'warning' ? 'alert alert-warning' : 'alert-error'
-      " role="alert">
-        <span>{{ toast.message }}</span>
-        <div v-if="toast.run">
-            <button class="btn btn-sm" @click="removeToast(toast.id || '0')">Close</button>
-          <button class="btn btn-sm btn-primary" @click="toast.run.feature">{{ toast.run.message }}</button>
+  <div v-if="toasts?.length"  class="flex justify-center md:justify-end">
+    <div class="fixed bottom-0 stack m-4">
+      <transition-group name="list">
+        <div v-for="toast in reverseToast(toasts)" :key="toast.id" >
+          <div :class="{'alert shadow-lg':true, 'alert-error': toast.type==='error',
+          'alert-success': toast.type==='success', 'alert-warning': toast.type==='warning'}">
+            <div><span>{{ toast.message }}</span></div>
+            <div v-if="!toast.duration" class="flex-none">
+              <button v-if="toast.run" @click="toast.run.feature" class="btn btn-sm btn-ghost">{{ toast.run.message }}</button>
+              <button @click="removeToast(toast.id)" class="btn btn-sm">CLOSE</button>
+            </div>
+          </div>
         </div>
-        <div v-else></div>
-      </div>
+      </transition-group>
     </div>
   </div>
 </template>
-  
+
 <script setup lang="ts">
-import _ from "lodash";
-import { getToasts } from "@/composables/toast";
-import { type ToastData } from "@/assets/ts/types";
+  import _ from "lodash";
+  import { getToasts } from "@/composables/toast";
+  import { type ToastData } from "@/assets/ts/types";
+  
+  let toasts = getToasts();
+  const removeToast = (id: number | undefined) =>{
+    if (typeof id !== "undefined") {
+      const isOnIndex = (_.findIndex(toasts.value, {id: id}));
+      toasts.value.splice(isOnIndex, 1);
+    };
+  };
 
-const opened = reactive({right: true})
-let toasts = getToasts();
-const removeToast = (id: string) => {
-    const isOnIndex = (_.findIndex(toasts.value, { id }));
-    toasts.value.splice(isOnIndex, 1);
-};
-
-const reverseToast = (toasts: ToastData[]) => {
-  return [...toasts].reverse()
-}
+  const reverseToast = (toasts: ToastData[]) => {
+    return [...toasts].reverse()
+  }
 
 </script>
+
+
+<style scoped>
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease;
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+</style>

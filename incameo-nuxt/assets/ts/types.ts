@@ -10,7 +10,7 @@ interface AlertData{
 };
 
 interface ToastData {
-  id?: string;
+  id?: number;
   message: string;
   type: ErrorTypes;
   duration?: number;

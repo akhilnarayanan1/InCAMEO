@@ -1,6 +1,7 @@
 <template> 
-    <label for="model_list_account" class="btn" @click="openDialog">
-      <span class="material-symbols-outlined">person_add</span>Load Accounts
+    <label for="listAccountDialogInput" class="btn" @click="openDialog">
+      <span class="material-symbols-outlined">person_add</span>
+      <div>Load Accounts</div>
     </label>
     
     <input type="checkbox" id="listAccountDialogInput" class="modal-toggle" v-model="listAccountDialogOpened" />

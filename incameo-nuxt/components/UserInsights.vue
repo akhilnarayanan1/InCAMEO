@@ -50,13 +50,17 @@
       <UserInsights2 :response="responseInsights1" />
 
   <div class="divider"></div>
-  <div class="mt-4">
+  <div class="m-4">
     <div role="tablist" class="tabs tabs-lifted tabs-lg">
       <template v-for="{id, hint} in insightsTabs2.tablist" :key="id">
         <input type="radio" name="days_tab_1" role="tab" class="tab" :aria-label="hint" :checked="id==insightsTabs2.activetab" 
         @click="fetchUserInsightsTSForId(id)"/>
         <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box">
-          <Line id="responseInsight2" :options="chartOptions" :data="chartData" />
+          <div class="card shadow-xl">
+            <div class="card-body">
+              <Line id="responseInsight2" :options="chartOptions" :data="chartData" />
+            </div>
+          </div>
         </div>
       </template>
     </div>
@@ -101,7 +105,7 @@ const insightsTabs2 = reactive({
 const chartData = ref<ChartData<'line'>>({datasets: []});
 
 const chartOptions = {
-  maintainAspectRatio: false,
+  // maintainAspectRatio: false,
   scales: {
     y : {
       beginAtZero: true,
