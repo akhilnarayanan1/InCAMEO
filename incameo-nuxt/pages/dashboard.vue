@@ -25,7 +25,7 @@ const {status, error, data: responseConnectedAccount, execute: loadAccountDetail
 }, {immediate: false, server: false});
 
 watch(() => status.value, (newstatus) => {
-  if(error.value) {
+  if(newstatus === "error" && error.value) {
     const errorMessage = (error.value as any)?.data?.error?.message || error.value.message;
     addToast({message: errorMessage, type: "error", duration: 3000});
   }

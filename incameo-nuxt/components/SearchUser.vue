@@ -2,7 +2,7 @@
   <form id="searchUserForm" @submit.prevent="() => searchUser()" class="m-4">
     <label class="input input-bordered flex items-center gap-2">
       <input id="searchedUsername" v-model="searchedUsername" type="text" class="grow" placeholder="Search creator/business account on Instagram" />
-      <button type="button" class="btn btn-sm m-2">
+      <button type="submit" class="btn btn-sm m-2">
         <span v-if="loading.searchAccount" class="loading loading-spinner loading-sm"></span>
         <span v-else class="material-symbols-outlined">search</span>
       </button>
@@ -98,7 +98,15 @@
 
   const {status, data: dataSearchedUser, error, execute: searchUser} = useLazyAsyncData('search-user', async() => {
 
-    const accessToken = await getAccessToken(currentUser.value?.uid || "", db).catch(error=>addToast({message: error, type: "error", duration: 3000}));
+    if (!currentUser.value) {
+      throw new Error("Unknown error, Please try again (401)");
+    };
+
+    if (!searchedUsername.value) {
+      throw new Error("Please enter a username to search");
+    };
+
+    const accessToken = await getAccessToken(currentUser.value.uid, db).catch(error=>addToast({message: error, type: "error", duration: 3000}));
     const url = await searchInstagramAccount({ accountId: props.accountId, username: searchedUsername.value, accessToken: accessToken});
 
     return $fetch<InstagramDiscovery>(url);
@@ -106,8 +114,8 @@
     
   watch(() => status.value, (newstatus) => {
     loading.searchAccount = newstatus == "pending";
-    searchAccountDialogOpened.value = newstatus != "pending";
-    if (error.value) {
+    searchAccountDialogOpened.value = newstatus == "success";
+    if (newstatus === "error" && error.value) {
       const errorMessage = (error.value as any)?.data?.error?.message || error.value.message;
       addToast({message: errorMessage, type: "error", duration: 3000});
     }

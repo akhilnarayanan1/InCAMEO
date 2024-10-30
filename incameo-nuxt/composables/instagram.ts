@@ -115,7 +115,7 @@ export const getOneAccount = async (args: {accessToken: string}) => {
     
     const {status, data: resp, error} = await useLazyFetch(listAccountURL, {server: false});
 
-    if(error.value) {
+    if(status.value === "error" && error.value) {
         addToast({message: error.value.data?.error?.message, type: "error", duration: 3000});
     } else {
         response.connectedAccount = resp.value as InstagramData;

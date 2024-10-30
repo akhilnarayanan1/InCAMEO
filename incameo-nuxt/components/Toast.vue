@@ -5,7 +5,7 @@
         <div v-for="toast in reverseToast(toasts)" :key="toast.id" >
           <div :class="{'alert shadow-lg':true, 'alert-error': toast.type==='error',
           'alert-success': toast.type==='success', 'alert-warning': toast.type==='warning'}">
-            <div><span>{{ toast.message }}</span></div>
+            <div class="text-wrap"><span>{{ toast.message }}</span></div>
             <div v-if="!toast.duration" class="flex-none">
               <button v-if="toast.run" @click="toast.run.feature" class="btn btn-sm btn-ghost">{{ toast.run.message }}</button>
               <button @click="removeToast(toast.id)" class="btn btn-sm">CLOSE</button>
