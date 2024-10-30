@@ -47,7 +47,7 @@ const connectFacebook = () => {
   })
   .catch(error => {
     loading.popup = false;
-    addToast({message: "cool acool cool acool cool cool acool acool cool acool cool acool cool cool acool acool", type: "error"})
+    addToast({message: error, type: "error", duration: 3000});
   });
 };
 
