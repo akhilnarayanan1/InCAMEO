@@ -105,17 +105,11 @@
   }, {immediate: false, server: false});
     
   watch(() => status.value, (newstatus) => {
-    if (newstatus == "pending") {
-      loading.searchAccount = true;
-      searchAccountDialogOpened.value = true;
-    } else {
-      loading.searchAccount = false;
-    }
-
+    loading.searchAccount = newstatus == "pending";
+    searchAccountDialogOpened.value = newstatus != "pending";
     if (error.value) {
       const errorMessage = (error.value as any)?.data?.error?.message || error.value.message;
       addToast({message: errorMessage, type: "error", duration: 3000});
-      searchAccountDialogOpened.value = false;
     }
   });
 

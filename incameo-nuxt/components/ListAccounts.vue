@@ -81,10 +81,10 @@ const {status, data: responseConnectedAccount, error, execute: loadAccounts} = u
 
 watch(() => status.value, (newstatus) => {
   loading.listAccount = newstatus == "pending";
+  listAccountDialogOpened.value = newstatus != "pending";
   if(error.value) {
     const errorMessage = (error.value as any)?.data?.error?.message || error.value.message;
     addToast({message: errorMessage, type: "error", duration: 3000});
-    listAccountDialogOpened.value = false;
   }
 });
 
