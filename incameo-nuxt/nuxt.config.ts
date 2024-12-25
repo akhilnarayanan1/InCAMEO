@@ -1,18 +1,22 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
+
   modules: [
     '@nuxt/devtools',
     '@nuxtjs/tailwindcss',
     'nuxt-vuefire',
   ],
+
   postcss: {
     plugins: {
       tailwindcss: {},
       autoprefixer: {},
     },
   },
+
   css: ['~/assets/css/globals.css'],
+
   vuefire: {
     // ensures the auth module is enabled
     auth: {
@@ -29,4 +33,6 @@ export default defineNuxtConfig({
       measurementId: process.env.FIREBASE_MEASUREMENT_ID
     }
   },
+
+  compatibilityDate: '2024-12-25',
 })

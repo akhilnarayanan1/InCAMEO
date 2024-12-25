@@ -6,36 +6,12 @@ service cloud.firestore {
     }
     
     match /users/{userId} {
-    	allow read: if isSignedIn();
-      allow create, update: if isOwner(userId);
+      allow read, create, update: if isOwner(userId);
     }
-    
-    match /instagram/{docId} {
-    	allow read: if isSignedIn();
-      allow create, update: if byOwner() && OwnerRegistered();
-    }
-    
-    match /facebook/{docId} {
-    	allow read: if isSignedIn();
-      allow create, update: if byOwner() && isSignedIn();
-    }
-    
     
     // Functions //
-    function OwnerRegistered(){
-    	return exists(/databases/$(database)/documents/users/$(request.auth.uid))
-    }
-    
-    function byOwner(){
-    	return request.auth.uid == request.resource.data.userid
-    }
-    
     function isOwner(userId){
     	return request.auth.uid == userId;
-    }
-    
-    function isSignedIn(){
-    	return request.auth != null;
     }
     
   }
